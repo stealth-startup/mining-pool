@@ -3,6 +3,8 @@ function Sha256 () {
 };
 
 Sha256.prototype = {
+
+
   midstate : function(str) {
 
     var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
@@ -15,13 +17,13 @@ Sha256.prototype = {
              0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
              0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
 
-    var W = Sha256.prepareData(str);
+    var W = this.prepareData(str);
 
     for(var i=16;i<64;i++) {
 
-      var s0 = Sha256.sigma0(W[i-15]);
+      var s0 = this.sigma0(W[i-15]);
 
-      var s1 = Sha256.sigma1(W[i-2]);
+      var s1 = this.sigma1(W[i-2]);
 
       W[i] = (W[i-16] + s0 + W[i-7] + s1) & 0xffffffff;    
     };
@@ -37,17 +39,17 @@ Sha256.prototype = {
     var h = H[7];
 
     for(i=0;i<64;i++) {
-      s1 = Sha256.Sigma1(e);
+      s1 = this.Sigma1(e);
       
-      var ch = Sha256.Ch(e,f,g);
+      var ch = this.Ch(e,f,g);
       
       var temp = h + s1 + ch + K[i] + W[i];
       
       d = (d+temp)  & 0xffffffff;
 
-      s0 = Sha256.Sigma0(a);
+      s0 = this.Sigma0(a);
 
-      var maj = Sha256.Maj(a,b,c);
+      var maj = this.Maj(a,b,c);
 
       temp = (temp + s0 + maj) & 0xffffffff;
 
@@ -71,18 +73,25 @@ Sha256.prototype = {
     H[6] = (H[6] + g) & 0xffffffff;
     H[7] = (H[7] + h) & 0xffffffff;
 
-    return H.map(function(x){return Sha256.toHexStr(x);}).join("");
+    return H.map(function(x){return Sha256.prototype.toHexStr(x);}).join("");
 
   } ,
 
 
   ROTR : function(n, x) { return (x >>> n) | (x << (32-n)); } ,
-  Sigma0 : function(x) { return Sha256.ROTR(2,  x) ^ Sha256.ROTR(13, x) ^ Sha256.ROTR(22, x); } ,
-  Sigma1 : function(x) { return Sha256.ROTR(6,  x) ^ Sha256.ROTR(11, x) ^ Sha256.ROTR(25, x); } ,
-  sigma0 : function(x) { return Sha256.ROTR(7,  x) ^ Sha256.ROTR(18, x) ^ (x>>>3);  } ,
-  sigma1 : function(x) { return Sha256.ROTR(17, x) ^ Sha256.ROTR(19, x) ^ (x>>>10); } ,
+  Sigma0 : function(x) { return this.ROTR(2,  x) ^ this.ROTR(13, x) ^ this.ROTR(22, x); } ,
+  Sigma1 : function(x) { return this.ROTR(6,  x) ^ this.ROTR(11, x) ^ this.ROTR(25, x); } ,
+  sigma0 : function(x) { return this.ROTR(7,  x) ^ this.ROTR(18, x) ^ (x>>>3);  } ,
+  sigma1 : function(x) { return this.ROTR(17, x) ^ this.ROTR(19, x) ^ (x>>>10); } ,
   Ch : function(x, y, z)  { return (x & y) ^ (~x & z); } ,
   Maj : function(x, y, z) { return (x & (y ^ z)) ^ (y & z); } ,
+
+  toHexStr : function(n) {
+    var s="", v;
+    for (var i=3; i>=0; i--) { v = (n>>>(i*8)) & 0xff; s = ("0"+v.toString(16)).slice(-2) + s ; }
+    return s;
+  } ,
+
 
   toWORD : function(str) {
     var a,b,c,d;
@@ -97,28 +106,17 @@ Sha256.prototype = {
     return ((d<<24) | (c<<16) | (b<<8) | a )>>>0;
   } ,
 
-  toHexStr : function(n) {
-    var s="", v;
-    for (var i=3; i>=0; i--) { v = (n>>>(i*8)) & 0xff; s = ("0"+v.toString(16)).slice(-2) + s ; }
-    return s;
-  } ,
 
   prepareData : function(str) {
     var W = [];
     while(str.length>0) {
       var data=str.slice(0,8);
-      W.push(Sha256.toWORD(data));
+      W.push(this.toWORD(data));
       str=str.slice(8);
     }
     return W;
   }
 
 };
-
-// var str='0000000293d5a732e749dbb3ea84318bd0219240a2e2945046015880000003f5000000008d8e2673e5a071a2c83c86e28033b1a0a4aac90dde7a0670827cd0c3';
-
-// var target="4c8226f95a31c9619f5197809270e4fa0a2d34c10215cf4456325e1237cb009d";
-
-// console.log(Sha256.midstate(str)==target);
 
 exports.Sha256 = Sha256;
