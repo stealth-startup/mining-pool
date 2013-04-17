@@ -101,7 +101,7 @@ Client.prototype = {
             for (var key in k) {
                 this.set(key, k[key]);
             };
-            return;
+            return this;
         };
 
         var opts = this.opts;
