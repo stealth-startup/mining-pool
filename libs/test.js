@@ -117,3 +117,102 @@ console.log("scriptPubKey Hash of %s",addr);
 console.log(getScriptPubKey(addr).toString('hex'));
 
 // build coinbase transaction
+var t_version = new Buffer(4);
+t_version.writeUInt32LE(1,0);
+
+var t_vin_count = new Buffer(1);
+t_vin_count[0]=1;
+
+var t_padding= new Buffer(36);
+t_padding.fill(0,0,32);
+t_padding.fill(0xff,32,36);
+
+var coinbase_begin = new Buffer(5);
+kapitalize.getblockcount(function(err,count){
+  var height = count+1;
+  coinbase_begin.writeUInt32LE(height,1);
+  coinbase_begin[0]=3;
+  coinbase_begin=coinbase_begin.slice(0,-1);
+});
+
+var coinbase_msg = new Buffer("Mined By Avalon");
+
+
+var coinbase_extra_nonce = new Buffer(4);
+coinbase_extra_nonce.fill(0);
+
+
+var t_sequence = new Buffer(4);
+t_sequence.fill(0xff);
+
+var t_vout_count = new Buffer(1);
+t_vout_count[0]=1;
+
+
+var amount = 2518695000;
+var t_amount = new Buffer(4);
+t_amount.writeUInt32LE(amount,0);
+
+var t_padding2 = new Buffer(4);
+t_padding2.fill(0);
+
+var t_locktime = new Buffer(4);
+t_locktime.fill(0);
+
+var build_coinbase_tx = function(addr) {
+  var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce]);
+  var coinbase_len = new Buffer(1);
+  coinbase_len[0] =  coinbase.length;
+  var t_pubkey = getScriptPubKey(addr);
+  var t_script_len = new Buffer(1);
+  t_script_len[0]=t_pubkey.length;
+  var coinbase_tx = Buffer.concat([t_version,t_vin_count,t_padding,coinbase_len,coinbase,t_sequence,t_vout_count,t_amount,t_padding2,t_script_len,t_pubkey,t_locktime]);
+  return coinbase_tx;
+};
+
+// var raw = 
+//       // version
+//       '01000000' 
+//       // in-counter
+//       + '01' 
+//       // 32 bytes 0 and ffffffff
+//       + '0000000000000000000000000000000000000000000000000000000000000000ffffffff'
+//       // coinbase length
+//       + '25' 
+//       // coinbase
+//          + '03' 		// length of height
+//          + 'df8e03'   		// height
+//          + '040000519612' 
+//          + '4d696e656420627920425443204775696c64' // Mined by BTC Guild
+//          + '0800fb1fda5d000000' 
+//       // sequence 
+//       + 'ffffffff' 
+//       // out-counter 
+//       + '01' 
+//       // amount
+//       + '48930597' 
+//       padding?
+//       + '00000000'
+//       // script length
+//       + '19' 
+//       // scriptPubKey
+//       + '76a91427a1f12771de5cc3b73941664b2537c15316be4388ac' 
+//       // locktime
+//       + '00000000';
+
+var block_header_for_getwork = 
+      // version
+      '00000002' + 
+      // prev block and fuck it to 
+      // 00000000000001b724886230d269e377921a48c1e6c4a8bbaddc49e519d88ea2
+      '19d88ea2addc49e5e6c4a8bb921a48c1d269e37724886230000001b700000000' + 
+      // merkle root
+      'edc443e05cd9d3cf5a06f488862476cc889dacab8b4ca92f7f248c895567e2de' +
+      // timestamp
+      '517ba69c' + 
+      // nbits
+      '1a01de94' + 
+      // nonce
+      '00000000' + 
+      // padding
+      '000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000';
