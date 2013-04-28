@@ -11,7 +11,7 @@ t_padding.fill(0,0,32);
 t_padding.fill(0xff,32,36);
 
 
-var coinbase_msg = new Buffer("Mined By Avalon");
+var coinbase_msg = new Buffer("Pink Floyd Is The Worst");
 
 var t_sequence = new Buffer(4);
 t_sequence.fill(0xff);
