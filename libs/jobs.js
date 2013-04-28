@@ -11,12 +11,14 @@
 var kapitalize = require('./kapitalize')({
     user:'naituida',
     pass:'123',
-    host:'127.0.0.1',
+    host:'192.168.0.2',
     port:8080
   });
 
 var crypto = require('crypto');
 var dhash = function(x) {return crypto.createHash('sha256').update(crypto.createHash('sha256').update(x).digest()).digest();};
+
+var sha256 = new (require('./sha256')).Sha256();                         
 
 require('buffertools');
 var toggle = require('endian-toggle');
@@ -26,8 +28,9 @@ var coinbase=require('./coinbase');
 function Jobs () {
   this.b_version = new Buffer("00000002",'hex');
   this.b_nonce = new Buffer("00000000",'hex');
-  this.b_padding = new Buffer("000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000",'hex');
-  this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
+  this.b_padding = "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+  // this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
+  this.addr = 'mxDSJyvJLCA5QBcdPgyPu9Qwo6D53JeodV';
 
   this.extranonce = 0;
   this.merkle_branch = [];
@@ -36,13 +39,17 @@ function Jobs () {
   this.nbits = new Buffer(4);
   this.prevhash = "";
   
-  this.template_1=new Buffer(0);
-  this.template_2=new Buffer(0);
+  this.template_1="";
+  this.template_2="";
+  this.target = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000';
+  this.hash1 = "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000";
+
 };
 
 Jobs.prototype = {
-  get_merkle_root : function(coinbase_hash) {
-    return this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse();
+  get_merkle_root : function(coinbase) {
+    var coinbase_hash = dhash(coinbase);  
+    return this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse().toString('hex');
   },
 
   update_merkle_branch : function() {
@@ -92,17 +99,21 @@ Jobs.prototype = {
 	buf.copy(new_buf,  4, 24, 28);
 	buf.copy(new_buf,  0, 28, 32);
 
-	self.template_1 = Buffer.concat([self.b_version,new_buf]);
-	self.template_2 = Buffer.concat([new Buffer(self.nbits,'hex'),new Buffer(self.b_padding,'hex')]);
+	self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
+	self.template_2 = self.nbits + self.b_padding;
       }
     );
   },
 
 
   getwork : function() {
-    
-
-
+    var coinbase_tx = coinbase.build_tx(this.addr,this.height,this.extranonce);
+    this.extranoce+=1;
+    var merkle_root = this.get_merkle_root(coinbase_tx);
+    var cur_time = Math.round(+new Date()/1000).toString(16);
+    var data = this.template_1 + merkle_root + cur_time + this.template_2;
+    var midstate = sha256.midstate(data.slice(0,128));
+    return {"midstate":midstate,"data":data,"hash1":this.hash1,"target":this.target};
   },
 
 
