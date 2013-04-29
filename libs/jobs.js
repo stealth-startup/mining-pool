@@ -8,6 +8,8 @@
 // # 8. calculate midstate 
 // # 9. header, midstate, target = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000', hash1= "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000"
 
+var async = require('async');
+
 var kapitalize = require('./kapitalize')({
     user:'naituida',
     pass:'123',
@@ -28,7 +30,7 @@ var coinbase=require('./coinbase');
 function Jobs () {
   this.b_version = new Buffer("00000002",'hex');
   this.b_nonce = new Buffer("00000000",'hex');
-  this.b_padding = "00000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+  this.b_padding = "00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   // this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
   this.addr = 'mtLsXbpDWNQDakQAtPjEN27qmgwYATkVEH';
 
@@ -41,6 +43,7 @@ function Jobs () {
   
   this.template_1="";
   this.template_2="";
+  this.merkle_root = "";
   this.target = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000';
   this.hash1 = "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000";
 
@@ -49,13 +52,14 @@ function Jobs () {
 Jobs.prototype = {
   get_merkle_root : function(coinbase) {
     var coinbase_hash = dhash(coinbase);  
-    return this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse().toString('hex');
+    var buf = this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse();
+    return buf.toString('hex');
   },
 
   update_merkle_branch : function() {
     var inputs = this.txs.map(
       function(x){
-	var buf=new Buffer(x,'hex');
+	var buf=new Buffer(x.hash,'hex');
 	return buf.reverse();
       });
     
@@ -86,7 +90,7 @@ Jobs.prototype = {
 	self.nbits = res.bits;
 	self.txs = res.transactions;
 	self.prevhash = res.previousblockhash;
-	
+
 	var buf = new Buffer(self.prevhash,'hex');
 	var new_buf = new Buffer(32);
 	new_buf.fill(0);
@@ -99,8 +103,15 @@ Jobs.prototype = {
 	buf.copy(new_buf,  4, 24, 28);
 	buf.copy(new_buf,  0, 28, 32);
 
-	self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
-	self.template_2 = self.nbits + self.b_padding;
+	async.series([
+	  function(callback) {
+	    self.update_merkle_branch();
+	  },
+	  function(callback) {
+	    self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
+	    self.template_2 = self.nbits + self.b_padding;
+	  }
+	]);
       }
     );
   },
@@ -111,12 +122,28 @@ Jobs.prototype = {
   },
 
   getwork : function() {
-    var coinbase_tx = coinbase.build_tx(this.addr,this.height,this.increase_extranonce());
-    var merkle_root = this.get_merkle_root(coinbase_tx);
-    var cur_time = Math.round(+new Date()/1000).toString(16);
-    var data = this.template_1 + merkle_root + cur_time + this.template_2;
-    var midstate = sha256.midstate(data.slice(0,128));
-    return {"midstate":midstate,"data":data,"hash1":this.hash1,"target":this.target};
+    var self = this;
+    var work;
+    async.series({
+
+      merkle_root:function(callback) {
+	var coinbase_tx = coinbase.build_tx(self.addr,self.height,self.increase_extranonce());
+	self.merkle_root = self.get_merkle_root(coinbase_tx);
+	callback(null,self.merkle_root);
+      },
+      
+      data:function(callback) {
+	var cur_time = Math.round(+new Date()/1000).toString(16);
+	var cur_data = self.template_1 + self.merkle_root + cur_time + self.template_2;
+	callback(null,cur_data);
+      }
+      
+    }, 
+		 function(err,result) {
+		   var midstate = sha256.midstate(result.data.slice(0,128));
+		   work= {"midstate":midstate,"data":result.data,"hash1":self.hash1,"target":self.target};
+    });
+    return work;
   },
 
 

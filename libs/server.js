@@ -4,6 +4,8 @@ var job = new (require('./jobs'))();
 
 var server = new rpc.Server();
 
+var async = require('async');
+
 job.update_block();
 
 var kapitalize = require('./kapitalize')({
@@ -13,15 +15,14 @@ var kapitalize = require('./kapitalize')({
     port:8080
   });
 
-// sample submit 
-var header= '000000022afb67434e2b7e2170bbfaba3f6b841e1e12f1a3793e2a5b05f090840000000044a7ca7282c17727b818d3babb853e99249e69a64c290b35826dec7bbb3a27e2517d49631c063051d9a71100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080020000';
-
 function getwork(args, opt, callback) {
   if(args.length==0) {
     callback(null,job.getwork());
   } else {
     kapitalize.getwork(args[0],function(err,res) {
-      callback(null,res.result);
+      // callback(null,res.result);
+      console.log(res);
+      callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
     });
   }
 }
@@ -35,4 +36,5 @@ function update_block(args,opt,callback) {
 server.expose('getwork', getwork);
 server.expose('update',update_block);
 
-server.listen(8334, 'localhost');
+server.listen(8334, '192.168.1.104');
+
