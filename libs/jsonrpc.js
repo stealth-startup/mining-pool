@@ -379,14 +379,16 @@ Server.prototype.handleHttp = function(req, res)
 
   var handle = function (buf) {
     var decoded = JSON.parse(buf);
-
+    console.log(decoded);
     // Check for the required fields, and if they aren't there, then
     // dispatch to the handleHttpError function.
-    if (!(decoded.method && decoded.params && decoded.id)) {
+    // if (!(decoded.method && decoded.params && decoded.id)) {
+    if (!(decoded.method && decoded.params )) {
       Endpoint.trace('-->', 'Response (invalid request)');
       Server.handleHttpError(req, res, 400, INVALID_REQUEST);
       return;
     }
+    if(!decoded.id) decoded.id = 0;
 
     var reply = function (json) {
       var encoded = JSON.stringify(json);

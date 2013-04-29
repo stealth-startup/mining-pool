@@ -11,7 +11,7 @@
 var kapitalize = require('./kapitalize')({
     user:'naituida',
     pass:'123',
-    host:'192.168.0.2',
+    host:'localhost',
     port:8080
   });
 
@@ -28,9 +28,9 @@ var coinbase=require('./coinbase');
 function Jobs () {
   this.b_version = new Buffer("00000002",'hex');
   this.b_nonce = new Buffer("00000000",'hex');
-  this.b_padding = "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+  this.b_padding = "00000080000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   // this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
-  this.addr = 'mxDSJyvJLCA5QBcdPgyPu9Qwo6D53JeodV';
+  this.addr = 'mtLsXbpDWNQDakQAtPjEN27qmgwYATkVEH';
 
   this.extranonce = 0;
   this.merkle_branch = [];
@@ -105,10 +105,13 @@ Jobs.prototype = {
     );
   },
 
+  increase_extranonce : function(f) {
+    this.extranonce = this.extranonce + 1;
+    return this.extranonce;
+  },
 
   getwork : function() {
-    var coinbase_tx = coinbase.build_tx(this.addr,this.height,this.extranonce);
-    this.extranoce+=1;
+    var coinbase_tx = coinbase.build_tx(this.addr,this.height,this.increase_extranonce());
     var merkle_root = this.get_merkle_root(coinbase_tx);
     var cur_time = Math.round(+new Date()/1000).toString(16);
     var data = this.template_1 + merkle_root + cur_time + this.template_2;
