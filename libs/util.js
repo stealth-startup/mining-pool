@@ -31,7 +31,7 @@ var getScriptPubKey = function (addr) {
   buf[0]=decoded;
   result = Buffer.concat([buf,result]);
 
-  var pubkeyhash = result.slice(0,-4);
+  var pubkeyhash = result.slice(1,-4);
   var script_begin = new Buffer([0x76,0xa9,0]);
   script_begin[2]=pubkeyhash.length;
   var script_end = new Buffer([0x88,0xac]);

@@ -52,8 +52,19 @@ function Jobs () {
 Jobs.prototype = {
   get_merkle_root : function(coinbase) {
     var coinbase_hash = dhash(coinbase);  
-    var buf = this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse();
-    return buf.toString('hex');
+    var buf = this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash);
+    var new_buf = new Buffer(32);
+    new_buf.fill(0);
+    buf.copy(new_buf, 28,  0,  4);
+    buf.copy(new_buf, 24,  4,  8);
+    buf.copy(new_buf, 20,  8, 12);
+    buf.copy(new_buf, 16, 12, 16);
+    buf.copy(new_buf, 12, 16, 20);
+    buf.copy(new_buf,  8, 20, 24);
+    buf.copy(new_buf,  4, 24, 28);
+    buf.copy(new_buf,  0, 28, 32);
+
+    return new_buf.toString('hex');
   },
 
   update_merkle_branch : function() {
@@ -90,7 +101,7 @@ Jobs.prototype = {
 	self.nbits = res.bits;
 	self.txs = res.transactions;
 	self.prevhash = res.previousblockhash;
-
+	self.update_merkle_branch();
 	var buf = new Buffer(self.prevhash,'hex');
 	var new_buf = new Buffer(32);
 	new_buf.fill(0);
@@ -102,16 +113,30 @@ Jobs.prototype = {
 	buf.copy(new_buf,  8, 20, 24);
 	buf.copy(new_buf,  4, 24, 28);
 	buf.copy(new_buf,  0, 28, 32);
+	self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
+	self.template_2 = self.nbits + self.b_padding;
 
-	async.series([
-	  function(callback) {
-	    self.update_merkle_branch();
-	  },
-	  function(callback) {
-	    self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
-	    self.template_2 = self.nbits + self.b_padding;
-	  }
-	]);
+
+	// async.series([
+	//   function(callback) {
+	//     self.update_merkle_branch();
+	//   },
+	//   function(callback) {
+	//     var buf = new Buffer(self.prevhash,'hex');
+	//     var new_buf = new Buffer(32);
+	//     new_buf.fill(0);
+	//     buf.copy(new_buf, 28,  0,  4);
+	//     buf.copy(new_buf, 24,  4,  8);
+	//     buf.copy(new_buf, 20,  8, 12);
+	//     buf.copy(new_buf, 16, 12, 16);
+	//     buf.copy(new_buf, 12, 16, 20);
+	//     buf.copy(new_buf,  8, 20, 24);
+	//     buf.copy(new_buf,  4, 24, 28);
+	//     buf.copy(new_buf,  0, 28, 32);
+	//     self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
+	//     self.template_2 = self.nbits + self.b_padding;
+	//   }
+	// ]);
       }
     );
   },
@@ -127,7 +152,7 @@ Jobs.prototype = {
     async.series({
 
       merkle_root:function(callback) {
-	var coinbase_tx = coinbase.build_tx(self.addr,self.height,self.increase_extranonce());
+	var coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
 	self.merkle_root = self.get_merkle_root(coinbase_tx);
 	callback(null,self.merkle_root);
       },
