@@ -3,7 +3,7 @@ var server = new rpc.Server();
 var fs=require('fs');
 var argv = require('optimist')
     .usage('Usage: $0 -n [server name]-o [bitcoind rpc port] -p [mining port]')
-    .demand(['o','p'])
+    .demand(['n','o','p'])
     .argv;
 
 var kapitalize = require('./libs/kapitalize')({
@@ -24,9 +24,9 @@ function getwork(args, opt, callback) {
   } else {
     shares+=1;
     kapitalize.getwork(args[0],function(err,res) {
-      if(res.result==true) {
+      if(res==true) {
 	// LMFAO!!!! We found a block!!!!!
-	fs.appendFile(dropbox_path+'blocks.log',new Date());	
+	fs.appendFile(dropbox_path+'blocks.log',new Date()+'\r\n');	
       }
       callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
     });
@@ -40,12 +40,12 @@ function update_share() {
   var cur = (new Date()).getTime();
   var info = {"name":name,"timestamp":cur,"shares":shares};
   fs.appendFile(dropbox_path+name+'.log',JSON.stringify(info));
-  shares = 0;
+  // shares = 0;
 };
 
 setInterval(update_share, 60*1000);
 
 server.expose('getwork', getwork);
 
-server.listen(argv.p, '127.0.0.1');
+server.listen(argv.p, '0.0.0.0');
 
