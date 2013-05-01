@@ -19,6 +19,7 @@ function getwork(args, opt, callback) {
   if(args.length==0) {
     callback(null,job.getwork());
   } else {
+    job.submit(args[0].slice(0,160));
     kapitalize.getwork(args[0],function(err,res) {
       // callback(null,res.result);
       console.log(res);

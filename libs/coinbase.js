@@ -32,7 +32,7 @@ var build_coinbase_tx = function(addr,amount,height,extranonce) {
   int53.writeUInt64LE(amount,t_amount);
  
   var coinbase_extra_nonce = new Buffer(4);
-  coinbase_extra_nonce.writeUInt32BE(extranonce,0);
+  coinbase_extra_nonce.writeUInt32LE(extranonce,0);
 
   var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce]);
   

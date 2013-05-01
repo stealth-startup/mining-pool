@@ -50,9 +50,8 @@ function Jobs () {
 };
 
 Jobs.prototype = {
-  get_merkle_root : function(coinbase) {
-    var coinbase_hash = dhash(coinbase);  
-    var buf = this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash);
+  get_merkle_root : function(coinbase_hash) {
+    var buf = this.merkle_branch.reduce(function(a,b){return dhash(Buffer.concat([a,b]));},coinbase_hash).reverse();
     var new_buf = new Buffer(32);
     new_buf.fill(0);
     buf.copy(new_buf, 28,  0,  4);
@@ -67,14 +66,14 @@ Jobs.prototype = {
     return new_buf.toString('hex');
   },
 
-  update_merkle_branch : function() {
-    var inputs = this.txs.map(
+  update_merkle_branch : function(txs) {
+    var inputs = txs.map(
       function(x){
 	var buf=new Buffer(x.hash,'hex');
 	return buf.reverse();
       });
     
-    inputs.unshift(inputs[0]);
+    inputs.unshift(new Buffer(0));
     var len = inputs.length;
     this.merkle_branch = [];
 
@@ -101,7 +100,7 @@ Jobs.prototype = {
 	self.nbits = res.bits;
 	self.txs = res.transactions;
 	self.prevhash = res.previousblockhash;
-	self.update_merkle_branch();
+	self.update_merkle_branch(self.txs);
 	var buf = new Buffer(self.prevhash,'hex');
 	var new_buf = new Buffer(32);
 	new_buf.fill(0);
@@ -153,7 +152,8 @@ Jobs.prototype = {
 
       merkle_root:function(callback) {
 	var coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
-	self.merkle_root = self.get_merkle_root(coinbase_tx);
+	var coinbase_hash = dhash(coinbase_tx);  
+	self.merkle_root = self.get_merkle_root(coinbase_hash);
 	callback(null,self.merkle_root);
       },
       
@@ -172,9 +172,13 @@ Jobs.prototype = {
   },
 
 
-  submit : function() {
-    
-
+  submit : function(data) {
+    var buf = toggle(new Buffer(data,'hex'),32);
+    var hash = dhash(buf).reverse();
+    var res = ('00000000000000000000000000'+hash.toString('hex')).slice(-64);
+    var target = '0000000006305100000000000000000000000000000000000000000000000000'; 
+    console.log("result:%s\ntarget:%s\n",res,target);
+    console.log(res<target);
   }
 };
 

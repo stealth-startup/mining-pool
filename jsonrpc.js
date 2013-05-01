@@ -379,6 +379,7 @@ Server.prototype.handleHttp = function(req, res)
 
   var handle = function (buf) {
     var decoded = JSON.parse(buf);
+    console.log(decoded);
     // Check for the required fields, and if they aren't there, then
     // dispatch to the handleHttpError function.
     // if (!(decoded.method && decoded.params && decoded.id)) {
