@@ -10,6 +10,8 @@
 
 var async = require('async');
 
+var buffertools = require('buffertools');
+
 var kapitalize = require('./kapitalize')({
     user:'naituida',
     pass:'123',
@@ -154,7 +156,7 @@ Jobs.prototype = {
 
       merkle_root:function(callback) {
 	self.coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
-	var coinbase_hash = dhash(coinbase_tx);  
+	var coinbase_hash = dhash(self.coinbase_tx);  
 	self.merkle_root = self.get_merkle_root(coinbase_hash);
 	callback(null,self.merkle_root);
       },
@@ -182,46 +184,38 @@ Jobs.prototype = {
     
     console.log("result:%s\ntarget:%s\n",res,target);
     console.log(res<target);
+
     if(res<target) {
       // LMFAO!!!! We found a block!!!!
       // Let's build it!!!
-      async.series({
-
-	blockheader: function(callback) {
-	  callback(new Buffer(data,'hex'));
-	},
-
-	t_count: function(callback) {
-	  var count = this.txs.length+1;
-	  var buf;
-	  if(count<0xfd) {
-	    buf=new Buffer(1);
-	    buf[0]=count;
-	  } else if(count<0xffff) {
-	    buf=new Buffer(3);
-	    buf[0]=0xfd;
-	    buf.writeUInt16LE(count,1);
-	  } else if(count<0xffffffff) {
-	    buf=new Buffer(5);
-	    buf[0]=0xfe;
-	    buf.writeUInt32LE(count,1);
-	  }
-	  callback(buf);
-	},
-	
-	all_txs: function(callback) {
-	  var transactions = this.txs.map(function(x){return x.data;});
-	  transactions.unshif(this.coinbase_tx);
-	  callback(Buffer.concat(transactions));					  
+	var count = this.txs.length+1;
+	var b_count;
+	if(count<0xfd) {
+	  b_count=new Buffer(1);
+	  b_count[0]=count;
+	} else if(count<0xffff) {
+	  b_count=new B_Countfer(3);
+	  b_count[0]=0xfd;
+	  b_count.writeUInt16LE(count,1);
+	} else if(count<0xffffffff) {
+	  b_count=new B_Countfer(5);
+	  b_count[0]=0xfe;
+	    b_count.writeUInt32LE(count,1);
 	}
-      },function(err,result) {
-	var raw_block = Buffer.concat([result.blockheader,result.t_count,result.all_txs]).toString('hex');
-	var status = kapitalize.submitblock(raw_block,
-					    function(err,res){
-					      console.log(res);
-					    }
-					   );
-      });      
+
+	var transactions = this.txs.map(function(x){return (new Buffer(x.data,'hex'));});
+	transactions.unshift(this.coinbase_tx);
+	var b_transactions = transactions.reduce(function(a,b){return a.concat(b);});
+
+	var raw_block = buffertools.concat(new Buffer(data,'hex'),b_count,b_transactions).toString('hex');
+	console.log(raw_block);
+
+	kapitalize.submitblock(raw_block,
+			       function(err,res){
+				 console.log(res);
+			       }
+			      );
+
     } 
   }
 };
