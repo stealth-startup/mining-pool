@@ -8,34 +8,23 @@ var async = require('async');
 
 job.update_block();
 
-var kapitalize = require('./kapitalize')({
-    user:'naituida',
-    pass:'123',
-    host:'127.0.0.1',
-    port:8080
-  });
-
 function getwork(args, opt, callback) {
   if(args.length==0) {
     callback(null,job.getwork());
   } else {
     job.submit(args[0].slice(0,160));
-    kapitalize.getwork(args[0],function(err,res) {
-      // callback(null,res.result);
-      console.log(res);
-      callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
-    });
+    callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
   }
-}
+};
 
 function update_block(args,opt,callback) {
   job.update_block();
   console.log("Updated At:%s",new Date());
   callback(null,true);
-}
+};
 
 server.expose('getwork', getwork);
 server.expose('update',update_block);
 
-server.listen(8334, '192.168.1.104');
+server.listen(8334, '0.0.0.0');
 

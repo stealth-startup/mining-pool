@@ -40,7 +40,9 @@ function Jobs () {
   this.amount = 0;
   this.nbits = new Buffer(4);
   this.prevhash = "";
-  
+  this.coinbase_tx = new Buffer(0);
+  this.txs = [];
+
   this.template_1="";
   this.template_2="";
   this.merkle_root = "";
@@ -151,7 +153,7 @@ Jobs.prototype = {
     async.series({
 
       merkle_root:function(callback) {
-	var coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
+	self.coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
 	var coinbase_hash = dhash(coinbase_tx);  
 	self.merkle_root = self.get_merkle_root(coinbase_hash);
 	callback(null,self.merkle_root);
@@ -177,8 +179,50 @@ Jobs.prototype = {
     var hash = dhash(buf).reverse();
     var res = ('00000000000000000000000000'+hash.toString('hex')).slice(-64);
     var target = '0000000006305100000000000000000000000000000000000000000000000000'; 
+    
     console.log("result:%s\ntarget:%s\n",res,target);
     console.log(res<target);
+    if(res<target) {
+      // LMFAO!!!! We found a block!!!!
+      // Let's build it!!!
+      async.series({
+
+	blockheader: function(callback) {
+	  callback(new Buffer(data,'hex'));
+	},
+
+	t_count: function(callback) {
+	  var count = this.txs.length+1;
+	  var buf;
+	  if(count<0xfd) {
+	    buf=new Buffer(1);
+	    buf[0]=count;
+	  } else if(count<0xffff) {
+	    buf=new Buffer(3);
+	    buf[0]=0xfd;
+	    buf.writeUInt16LE(count,1);
+	  } else if(count<0xffffffff) {
+	    buf=new Buffer(5);
+	    buf[0]=0xfe;
+	    buf.writeUInt32LE(count,1);
+	  }
+	  callback(buf);
+	},
+	
+	all_txs: function(callback) {
+	  var transactions = this.txs.map(function(x){return x.data;});
+	  transactions.unshif(this.coinbase_tx);
+	  callback(Buffer.concat(transactions));					  
+	}
+      },function(err,result) {
+	var raw_block = Buffer.concat([result.blockheader,result.t_count,result.all_txs]).toString('hex');
+	var status = kapitalize.submitblock(raw_block,
+					    function(err,res){
+					      console.log(res);
+					    }
+					   );
+      });      
+    } 
   }
 };
 

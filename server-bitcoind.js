@@ -15,7 +15,7 @@ var kapitalize = require('./libs/kapitalize')({
 });
 
 var shares = 0;
-var dropbox_path = "/home/david/Dropbox/";
+var dropbox_path = "/home/nate/Dropbox/";
 
 function getwork(args, opt, callback) {
   if(args.length==0) {
@@ -27,7 +27,7 @@ function getwork(args, opt, callback) {
     kapitalize.getwork(args[0],function(err,res) {
       if(res==true) {
 	// LMFAO!!!! We found a block!!!!!
-	fs.appendFile(dropbox_path+'blocks.log',new Date()+'\r\n');	
+	fs.appendFile(dropbox_path+'blocks.log',(new Date()).getTime()+'\r\n');	
       }
       callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
     });
@@ -40,7 +40,7 @@ function update_share() {
   var name = argv.n;
   var cur = (new Date()).getTime();
   var info = {"name":name,"timestamp":cur,"shares":shares.toString()};
-  fs.appendFile(dropbox_path+name+'.log',JSON.stringify(info));
+  fs.appendFile(dropbox_path+name+'.log',JSON.stringify(info)+'\r\n');
   // shares = 0;
 };
 
