@@ -17,14 +17,14 @@ function getwork(args, opt, callback) {
   }
 };
 
-function update_block(args,opt,callback) {
+function update(args,opt,callback) {
   job.update_block();
   console.log("Updated At:%s",new Date());
   callback(null,true);
 };
 
 server.expose('getwork', getwork);
-server.expose('update',update_block);
+server.expose('update',update);
 
 server.listen(8334, '0.0.0.0');
 

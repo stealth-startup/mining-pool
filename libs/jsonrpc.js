@@ -28,7 +28,7 @@ util.inherits(Endpoint, events.EventEmitter);
  */
 Endpoint.trace = function(direction, message)
 {
-  console.log('   ' + direction + '   ' + message);
+//  console.log('   ' + direction + '   ' + message);
 };
 
 /**
