@@ -27,7 +27,7 @@ var sha256 = new (require('./sha256')).Sha256();
 require('buffertools');
 var toggle = require('endian-toggle');
 
-var coinbase=require('./coinbase');
+var coinbaser=require('./coinbase');
 
 function Jobs () {
   this.b_version = new Buffer("00000002",'hex');
@@ -183,7 +183,8 @@ Jobs.prototype = {
       {
 	one:function(callback) {
 	  console.log("building coinbase");
-	  self.coinbase_tx = coinbase.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
+	  console.log(self.addr + self.amount + self.height);
+	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
 	  coinbase_hash = dhash(self.coinbase_tx); 
 	  callback(null,coinbase_hash);
 	},
@@ -192,7 +193,7 @@ Jobs.prototype = {
 	  console.log("coinbase:%s",self.coinbase_tx.toString('hex'));
 	  console.log("coinbase_hash:%s",coinbase_hash.toString('hex'));
 	  self.merkle_root = self.get_merkle_root(coinbase_hash);
-	  self.merkle_to_coinbase[self.merkle_root]=self.coinbase_tx;
+	  self.merkle_to_coinbase[self.merkle_root]=self.coinbase_tx.toString('hex');
 	  callback(null,self.merkle_root);
 	},
 	
@@ -242,6 +243,7 @@ Jobs.prototype = {
       async.waterfall(
 	[
 	  function(callback) {
+	    console.log(self);
 	    var count = self.txs.length+1;
 	    console.log("Tx count %s:",count);
 	    if(count<0xfd) {
@@ -267,11 +269,25 @@ Jobs.prototype = {
 	  },
 
 	  function(coinbase,callback) {
-	    var transactions = self.txs.map(function(x){return (new Buffer(x.data,'hex'));});
-	    transactions.unshift(coinbase);
-	    var b_transactions = transactions.reduce(function(a,b){return a.concat(b);});
-	    tx_hex = b_transactions.toString('hex');
-	    callback(null);
+	    if(coinbase===undefined) callback(true);
+	    async.reduce(self.txs,coinbase,function(cur,item,cb){
+	      cb(null,cur+item.data);
+	    }, function(err, result){
+	      tx_hex = result;
+	    });
+	    callback(null);			 
+	    // async.map(self.txs, function (item, callback) {
+	    //   var ret = item.data;
+	    //   callback(null, ret);
+	    // }, function (err, transactions) {
+	    //   async.reduce([coinbase].concat(transactions), "", function(cur, item, callback){
+	    // 	console.log(item);
+	    // 	callback(null, cur + item);
+	    //   }, function(err, result){
+	    // 	tx_hex = result;
+	    //   });
+	    // });
+	    // callback(null);
 	  } ,
 
 
