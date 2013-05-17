@@ -652,7 +652,7 @@ var HttpServerConnection = function HttpServerConnection(server, req, res)
   this.req = req;
   this.res = res;
   this.isStreaming = false;
-
+  this.res.connection.setMaxListeners(0);
   this.res.connection.on('end', function () {
     self.emit('end');
   });
