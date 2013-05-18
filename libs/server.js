@@ -18,6 +18,13 @@ var stales = [];
 job.update_block();
 
 function getwork(args, opt, callback) {
+  var authHeader = opt.req.headers['authorization'] || '';
+  var authToken = authHeader.split(/\s+/).pop() || '';
+  var auth = new Buffer(authToken, 'base64').toString();
+  var parts = auth.split(/:/);
+  var username = parts[0];
+  var password = parts[1];
+
   if(args.length==0) {
     jobs++;
     callback(null,job.getwork());
