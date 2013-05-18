@@ -8,8 +8,22 @@ function poolstatus(url) {
   this.stales = [];
   this.start = +new Date();
 
+  this.make_url = function(hash) {
+    return '<a href="http://blockexplorer.com/testnet/block/'+hash+ '">' + hash + '</a>';
+  };
+
   this.render_blocks = function() {
-    $("#blocks").text(JSON.stringify(self.blocks));
+    var blocks_text = "<table><th><td>Block Hash</td><td>Mined At</td><td>Shares</td></th>";
+    self.blocks.forEach(function(block) {
+      var text = "<tr>";
+      text += "<td>"+ this.make_url(block.hash) +"</td>";
+      text += "<td>"+ block.timestamp.toLocaleString() +"</td>";
+      text += "<td>"+ block.shares +"</td>";
+      text += "</tr>";
+      blocks_text += text;
+    });
+    blocks_text += "</table>";
+    $("#blocks").html(blocks_text);
     $("#stales").text(JSON.stringify(self.stales));
   },
   
