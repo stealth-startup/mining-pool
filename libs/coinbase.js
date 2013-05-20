@@ -41,7 +41,8 @@ var build_coinbase_tx = function(addr,amount,height,extranonce) {
   var coinbase_len = new Buffer(1);
   coinbase_len[0] =  coinbase.length;
   
-  var t_pubkey = util.getScriptPubKey(addr);
+  // var t_pubkey = util.getScriptPubKey(addr);
+  var t_pubkey = new Buffer('76a914b93dfd929a473f652c7c3e73ed093d60ae6385c388ac','hex');
 
   var t_script_len = new Buffer(1);
   t_script_len[0]=t_pubkey.length;

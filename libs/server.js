@@ -1,7 +1,3 @@
-var fs = require('fs'),
-    http = require('http'),
-    sio = require('socket.io');
-
 var rpc = require('./jsonrpc');
 
 var job = new (require('./jobs'))();
@@ -14,6 +10,7 @@ var shares = 0;
 var jobs = 0;
 var blocks = [];
 var stales = [];
+var start = +new Date();
 
 job.update_block();
 
@@ -64,6 +61,7 @@ function stats(args,opt,callback) {
   response.jobs = jobs;
   response.blocks = blocks;
   response.stales = stales;
+  response.start = start;
   callback(null,JSON.stringify(response));
 };
 
