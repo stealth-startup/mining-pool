@@ -1,3 +1,8 @@
+var argv = require('optimist')
+  .usage('Usage: $0 -p [mining port]')
+  .demand(['p'])
+  .argv;
+
 var rpc = require('./jsonrpc');
 
 var job = new (require('./jobs'))();
@@ -69,5 +74,5 @@ server.expose('getwork', getwork);
 server.expose('update',update);
 server.expose('stats',stats);
 
-server.listen(8334, '0.0.0.0');
+server.listen(argv.p, '0.0.0.0');
 
