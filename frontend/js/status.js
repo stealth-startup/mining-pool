@@ -54,7 +54,7 @@ function poolstatus(url) {
 	self.jobs = data.jobs;
 	self.blocks = data.blocks;
 	self.stales = data.stales;
-	self.hashrate = self.shares/((cur_time-self.start)/1000.0) * 4.2;
+	self.hashrate = self.shares/((cur_time-data.start)/1000.0) * 4.2;
 	self.render();
       },
       error: function (responseData, textStatus, errorThrown) {

@@ -10,7 +10,7 @@ t_vin_count[0]=1;
 
 var t_padding= new Buffer('0000000000000000000000000000000000000000000000000000000000000000ffffffff','hex');
 
-var coinbase_msg = new Buffer("Mined By Avalon");
+var coinbase_msg = new Buffer("Mined By ASICMiner");
 
 var t_sequence = new Buffer(4);
 t_sequence.fill(0xff);
