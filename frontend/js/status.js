@@ -9,7 +9,7 @@ function poolstatus(url) {
   this.start = +new Date();
 
   this.make_url = function(hash) {
-    return '<a href="http://blockexplorer.com/testnet/block/'+hash+ '">' + hash + '</a>';
+    return '<a href="http://blockexplorer.com/block/'+hash+ '">' + hash + '</a>';
   };
 
   this.render_blocks = function() {
