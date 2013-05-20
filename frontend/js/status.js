@@ -13,10 +13,10 @@ function poolstatus(url) {
   };
 
   this.render_blocks = function() {
-    var blocks_text = "<table><th><td>Block Hash</td><td>Mined At</td><td>Shares</td></th>";
+    var blocks_text = "<table><tr><th>Block Hash</th><th>Mined At</th><th>Shares</th></tr>";
     self.blocks.forEach(function(block) {
       var text = "<tr>";
-      text += "<td>"+ this.make_url(block.hash) +"</td>";
+      text += "<td>"+ self.make_url(block.hash) +"</td>";
       text += "<td>"+ block.timestamp.toLocaleString() +"</td>";
       text += "<td>"+ block.shares +"</td>";
       text += "</tr>";
@@ -48,7 +48,7 @@ function poolstatus(url) {
       success: function(responseData, textStatus, jqXHR) {
 	$("#msg").text("");
 	var data = JSON.parse(responseData.result);
-	self.render_data(data);
+	// self.render_data(data);
 	var cur_time = +new Date();
 	self.shares = data.shares;
 	self.jobs = data.jobs;

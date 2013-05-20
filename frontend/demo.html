@@ -4,7 +4,8 @@
     <script type="text/javascript" src="js/jquery-2.0.0.min.js"></script>
     <script type="text/javascript" src="js/status.js"></script>
     <script>
-      var stats = new poolstatus('http://127.0.0.1:8334/');
+      var stats = new poolstatus('http://192.168.0.12:8334/');
+      stats.refresh();
       setInterval(stats.refresh,30000);
     </script>
   </head>
