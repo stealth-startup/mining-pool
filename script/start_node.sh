@@ -51,9 +51,11 @@ while [ 1 ] ; do
  if [ $CheckQQ_RET -eq 1 ];
  then
      bitcoind --daemon
- fi 
+ fi
 
-sleep 15
+./blocknotify.sh
+
+sleep 300
 
 done
 
