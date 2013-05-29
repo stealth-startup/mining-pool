@@ -20,7 +20,7 @@ var getScriptPubKey = function (addr) {
   var result = new Buffer(0);
   var buf = new Buffer(1);
 
-  while(decoded>256) {
+  while(decoded>=256) {
     var div = decoded.div(256);
     var mod = decoded.mod(256);
     buf[0]=mod;
@@ -31,6 +31,18 @@ var getScriptPubKey = function (addr) {
   buf[0]=decoded;
   result = Buffer.concat([buf,result]);
 
+  var nPad = 0;
+  var addr_split = addr.split("");
+  for(var x in addr_split) {
+    if(addr_split[x]=='1') {
+      nPad += 1;
+    } else break;
+  };
+  
+  var pad = new Buffer(nPad);
+  pad.fill(0);
+  result = Buffer.concat([pad,result]);
+  console.log(result);
   var pubkeyhash = result.slice(1,-4);
   var script_begin = new Buffer([0x76,0xa9,0]);
   script_begin[2]=pubkeyhash.length;
