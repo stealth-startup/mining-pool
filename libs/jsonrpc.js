@@ -278,16 +278,22 @@ Client.prototype.call = function (method, params, opts, callback)
         callback(new Error(""+response.statusCode+" "+data));
         return;
       }
-      var decoded = JSON.parse(data);
-      if ("function" === typeof callback) {
-        if (!decoded.error) {
-          decoded.error = null;
-        }
-        callback(decoded.error, decoded.result);
-      }
-    });
+	try{
+	var decoded = JSON.parse(data);
+	if ("function" === typeof callback) {
+	    if (!decoded.error) {
+		decoded.error = null;
+	    }
+	    callback(decoded.error, decoded.result);
+	}
+	} catch (err) {}
+
+    }
+	       );
+
   });
 };
+		  
 
 /**
  * JSON-RPC Server.
@@ -378,7 +384,10 @@ Server.prototype.handleHttp = function(req, res)
   }
 
   var handle = function (buf) {
+      try {
     var decoded = JSON.parse(buf);
+      } catch(err) { var decoded = {} };
+      
     // Check for the required fields, and if they aren't there, then
     // dispatch to the handleHttpError function.
     // if (!(decoded.method && decoded.params && decoded.id)) {

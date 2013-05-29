@@ -205,7 +205,7 @@ Jobs.prototype = {
 
 	response:function(callback) {
 	  var midstate = sha256.midstate(data.slice(0,128));
-	  work= {"midstate":midstate,"data":data,"hash1":self.hash1,"target":target,"padding":"dannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuckdannyfuck"};
+	  work= {"midstate":midstate,"data":data,"hash1":self.hash1,"target":target,"padding":"dannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoing"};
 	  callback(null,JSON.stringify(work));
 	}
       }
