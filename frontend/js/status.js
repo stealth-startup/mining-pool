@@ -2,14 +2,14 @@ function poolstatus(url) {
   var self = this;
   this.url = url;
   this.hashrate = 0;
-  this.shares = 0;
+  this.shares = [];
   this.jobs = 0;
   this.blocks = [];
   this.stales = [];
   this.start = +new Date();
 
   this.make_url = function(hash) {
-    return '<a href="http://blockexplorer.com/block/'+hash+ '">' + hash + '</a>';
+    return '<a href="https://blockchain.info/block-index/'+hash+ '">' + hash + '</a>';
   };
 
   this.render_blocks = function() {
@@ -24,7 +24,7 @@ function poolstatus(url) {
     });
     blocks_text += "</table>";
     $("#blocks").html(blocks_text);
-    $("#stales").text(JSON.stringify(self.stales));
+    //$("#stales").text(JSON.stringify(self.stales));
   },
   
   this.render = function() {
