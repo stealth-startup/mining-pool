@@ -18,6 +18,7 @@ var stales = [];
 var start = +new Date();
 
 job.update_block();
+job.update_namecoin_block();
 
 function getwork(args, opt, callback) {
   console.log(opt.req.connection.remoteAddress);
@@ -55,6 +56,12 @@ function update(args,opt,callback) {
   callback(null,true);
 };
 
+function update_namecoin(args,opt,callback) {
+  job.update_namecoin_block();
+  console.log("Updated At:%s",new Date());
+  callback(null,true);
+}
+
 function stats(args,opt,callback) {
   var response = {};
   response.shares = shares;
@@ -67,6 +74,7 @@ function stats(args,opt,callback) {
 
 server.expose('getwork', getwork);
 server.expose('update',update);
+server.expose('update_namecoin',update_namecoin);
 server.expose('stats',stats);
 
 server.listen(argv.p, '0.0.0.0');

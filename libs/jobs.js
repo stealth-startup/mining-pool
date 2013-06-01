@@ -12,12 +12,20 @@ var async = require('async');
 
 var buffertools = require('buffertools');
 
-var kapitalize = require('./kapitalize')({
+var bitcoind = require('./kapitalize')({
   user:'naituida',
   pass:'123',
   host:'localhost',
   port:8080
 });
+
+var namecoind = require('./kapitalize')({
+  user:'naituida',
+  pass:'123',
+  host:'localhost',
+  port:8081
+});
+
 
 var crypto = require('crypto');
 var dhash = function(x) {return crypto.createHash('sha256').update(crypto.createHash('sha256').update(x).digest()).digest();};
@@ -104,7 +112,7 @@ Jobs.prototype = {
   
   update_block : function() {
     var self = this;
-    kapitalize.getblocktemplate(
+    bitcoind.getblocktemplate(
       function(err,res) {
 	async.waterfall(
 	  [
@@ -155,6 +163,16 @@ Jobs.prototype = {
     );
   },
 
+  update_namecoin_block: function() {
+    console.log("updating namecoin");
+    var self = this;
+    namecoind.getauxblock(function(err,aux_pow) {
+      self.namecoin_target = aux_pow.target;
+      self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'00000001'+'00000000','hex');
+    });
+    
+  },
+
   increase_extranonce : function(f) {
     this.extranonce = this.extranonce + 1;
     return this.extranonce;
@@ -176,7 +194,7 @@ Jobs.prototype = {
 	one:function(callback) {
 	  // console.log("building coinbase");
 	  // console.log(self.addr + self.amount + self.height);
-	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce());
+	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),self.merged_script);
 	  coinbase_hash = dhash(self.coinbase_tx); 
 	  callback(null,coinbase_hash);
 	},
@@ -224,11 +242,19 @@ Jobs.prototype = {
     var hash = dhash(buf).reverse();
     var res = ('0000000000000000000000000000000000000000000000000000000000000000'+hash.toString('hex')).slice(-64);
     var target = this.target;
+    var namecoin_target = this.namecoin_target;
     var pow = res<target;
+    var aux_pow = res<namecoin_target;
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
     var staled = (coinbase === undefined);
+    
+    if(aux_pow) {
+      // We found a namecoin block
+      
+    };
+
     // console.log("result:%s\ntarget:%s\nfound:%s\n",res,target,pow);
     if(pow && !staled) {
       // LMFAO!!!! We found a block!!!!
@@ -272,7 +298,7 @@ Jobs.prototype = {
 	  function(callback) {
 	    var raw_block = block_header + count_hex + tx_hex;
 	    console.log("submitblock:%s",raw_block);
-	    kapitalize.submitblock(raw_block,
+	    bitcoind.submitblock(raw_block,
 				   function(err,res){
 				     // console.log("Error:%s",err);
 				     // console.log("Result:%s",JSON.stringify(res));
