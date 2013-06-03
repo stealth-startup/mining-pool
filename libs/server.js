@@ -14,35 +14,30 @@ var async = require('async');
 var shares = 0;
 var jobs = 0;
 var blocks = [];
-var stales = [];
 var start = +new Date();
+var workers = {};
 
 job.update_block();
 job.update_namecoin_block();
 
 function getwork(args, opt, callback) {
-  console.log(opt.req.connection.remoteAddress + " Asks for job\n");
-
+  var ip = opt.req.connection.remoteAddress;
+  console.log( ip + " Asks for job\n");
+  if(!workers[ip]) workers[ip] = {"shares":0,"jobs":0};
+  
   if(args.length==0) {
-    jobs++;
+    workers[ip].jobs++;
     callback(null,job.getwork());
   } else {
-    shares++;
+    workers[ip].shares++;
     var res = job.submit(args[0].slice(0,160));
     // console.log(res);
     if(res.found) {
       var block = {};
       block.hash = res.hash;
       block.timestamp = (new Date()).toLocaleString();
-      if(blocks.length>0) {
-	var last_block = blocks[blocks.length-1];
-	block.shares = shares - last_block.shares;
-      } else {
-	block.shares = shares;
-      }
-      if(res.staled) {
-	stales.push(block);
-      } else {
+      
+      if(!res.staled) {
 	blocks.push(block);
       };
     }
@@ -64,11 +59,9 @@ function update_namecoin(args,opt,callback) {
 
 function stats(args,opt,callback) {
   var response = {};
-  response.shares = shares;
-  response.jobs = jobs;
   response.blocks = blocks;
-  response.stales = stales;
   response.start = start;
+  response.workers = JSON.stringify(workers);
   callback(null,JSON.stringify(response));
 };
 
