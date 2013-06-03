@@ -36,8 +36,8 @@ var build_coinbase_tx = function(addr,amount,height,extranonce,merged_script) {
   var coinbase_extra_nonce = new Buffer(4);
   coinbase_extra_nonce.writeUInt32LE(extranonce,0);
 
-  var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce]);
-  
+  var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce,merged_script]);
+
   var coinbase_len = new Buffer(1);
   coinbase_len[0] =  coinbase.length;
   
@@ -45,10 +45,10 @@ var build_coinbase_tx = function(addr,amount,height,extranonce,merged_script) {
   // var t_pubkey = new Buffer('76a914b93dfd929a473f652c7c3e73ed093d60ae6385c388ac','hex');
 
   var t_script_len = new Buffer(1);
-  t_script_len[0]=t_pubkey.length+merged_script.length;
+  t_script_len[0]=t_pubkey.length;
 
 
-  var coinbase_tx = Buffer.concat([t_version,t_vin_count,t_padding,coinbase_len,coinbase,t_sequence,t_vout_count,t_amount,t_script_len,t_pubkey,merged_script,t_locktime]);
+  var coinbase_tx = Buffer.concat([t_version,t_vin_count,t_padding,coinbase_len,coinbase,t_sequence,t_vout_count,t_amount,t_script_len,t_pubkey,t_locktime]);
 
   return coinbase_tx;
 };

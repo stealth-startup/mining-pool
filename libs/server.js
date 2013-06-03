@@ -21,7 +21,7 @@ job.update_block();
 job.update_namecoin_block();
 
 function getwork(args, opt, callback) {
-  console.log(opt.req.connection.remoteAddress);
+  console.log(opt.req.connection.remoteAddress + " Asks for job\n");
 
   if(args.length==0) {
     jobs++;
@@ -29,7 +29,7 @@ function getwork(args, opt, callback) {
   } else {
     shares++;
     var res = job.submit(args[0].slice(0,160));
-    console.log(res);
+    // console.log(res);
     if(res.found) {
       var block = {};
       block.hash = res.hash;

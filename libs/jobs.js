@@ -10,6 +10,8 @@
 
 var async = require('async');
 
+var util = require('./util');
+
 var buffertools = require('buffertools');
 
 var bitcoind = require('./kapitalize')({
@@ -42,7 +44,8 @@ function Jobs () {
   this.b_padding = "00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   // this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
   // this.addr = 'mtLsXbpDWNQDakQAtPjEN27qmgwYATkVEH';
-  this.addr = 'mraCxCcYM3E1HTvGcTmxY2gzNm9fKfdbN8';
+  // this.addr = 'mraCxCcYM3E1HTvGcTmxY2gzNm9fKfdbN8';
+  this.addr = '1HtUGfbDcMzTeHWx2Dbgnhc6kYnj1Hp24i';
   this.extranonce = 0;
   this.merkle_branch = [];
   this.height = 0;
@@ -167,7 +170,8 @@ Jobs.prototype = {
     console.log("updating namecoin");
     var self = this;
     namecoind.getauxblock(function(err,aux_pow) {
-      self.namecoin_target = aux_pow.target;
+      self.namecoin_target = toggle(new Buffer(aux_pow.target,'hex'),32).reverse().toString('hex');
+      self.namecoin_hash = aux_pow.hash;
       self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'00000001'+'00000000','hex');
     });
     
@@ -245,17 +249,60 @@ Jobs.prototype = {
     var namecoin_target = this.namecoin_target;
     var pow = res<target;
     var aux_pow = res<namecoin_target;
+//    var aux_pow = true;
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
     var staled = (coinbase === undefined);
+
+    console.log("bitcoin result:%s\nbitcoin target:%s\nfound:%s\n",res,target,pow);
+    console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
+
     
-    if(aux_pow) {
+    if(aux_pow && !staled) {
       // We found a namecoin block
-      
+      // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
+      var branch_count;
+      var branch_hex;
+      var parent_header=block_header;
+      var block_hash;
+      async.waterfall(
+	[
+	  function(callback) {
+	    block_hash = toggle(new Buffer(res,'hex'),32).reverse().toString('hex');
+	    callback(null);
+	  },
+
+	  function(callback) {
+	    branch_count = util.toVarIntHex(self.merkle_branch.length);
+	    callback(null);
+	  },
+	  
+	  function(callback) {
+	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
+	      cb(null,cur+toggle(item,32).toString('hex'));
+	    }, function(err, result){
+	      branch_hex = result;
+	    });
+	    callback(null);
+	  },
+
+	  function(callback) {
+	    var namecoin_submission = 
+		  coinbase + block_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
+	    console.log("namecoin hash:%s\n",self.namecoin_hash);
+	    console.log("namecoin  aux:%s\n",namecoin_submission);
+	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
+				  function(err,res){
+				     console.log("Error:%s",err);
+				     console.log("Result:%s",JSON.stringify(res));
+				  });
+	    callback(null);
+	  }
+	]);
     };
 
-    // console.log("result:%s\ntarget:%s\nfound:%s\n",res,target,pow);
+
     if(pow && !staled) {
       // LMFAO!!!! We found a block!!!!
       // Let's build it!!!
@@ -269,19 +316,7 @@ Jobs.prototype = {
 	    // console.log(self);
 	    var count = self.txs.length+1;
 	    // console.log("Tx count %s:",count);
-	    if(count<0xfd) {
-	      b_count=new Buffer(1);
-	      b_count[0]=count;
-	    } else if(count<0xffff) {
-	      b_count=new Buffer(3);
-	      b_count[0]=0xfd;
-	      b_count.writeUInt16LE(count,1);
-	    } else if(count<0xffffffff) {
-	      b_count=new Buffer(5);
-	      b_count[0]=0xfe;
-	      b_count.writeUInt32LE(count,1);
-	    }
-	    count_hex = b_count.toString('hex');
+	    count_hex = util.toVarIntHex(count);
 	    callback(null);
 	  } ,
 
