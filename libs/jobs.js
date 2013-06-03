@@ -170,9 +170,9 @@ Jobs.prototype = {
     console.log("updating namecoin");
     var self = this;
     namecoind.getauxblock(function(err,aux_pow) {
-      self.namecoin_target = toggle(new Buffer(aux_pow.target,'hex'),32).reverse().toString('hex');
+      self.namecoin_target = self.reverse_hex(aux_pow.target);
       self.namecoin_hash = aux_pow.hash;
-      self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'00000001'+'00000000','hex');
+      self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
     });
     
   },
@@ -249,13 +249,13 @@ Jobs.prototype = {
     var namecoin_target = this.namecoin_target;
     var pow = res<target;
     var aux_pow = res<namecoin_target;
-//    var aux_pow = true;
+    // var aux_pow = true;
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
     var staled = (coinbase === undefined);
 
-    console.log("bitcoin result:%s\nbitcoin target:%s\nfound:%s\n",res,target,pow);
+    console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
     console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
 
     
@@ -265,14 +265,9 @@ Jobs.prototype = {
       var branch_count;
       var branch_hex;
       var parent_header=block_header;
-      var block_hash;
+      var parent_hash=self.reverse_hex(res);
       async.waterfall(
 	[
-	  function(callback) {
-	    block_hash = toggle(new Buffer(res,'hex'),32).reverse().toString('hex');
-	    callback(null);
-	  },
-
 	  function(callback) {
 	    branch_count = util.toVarIntHex(self.merkle_branch.length);
 	    callback(null);
@@ -280,7 +275,7 @@ Jobs.prototype = {
 	  
 	  function(callback) {
 	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
-	      cb(null,cur+toggle(item,32).toString('hex'));
+	      cb(null,cur+item.toString('hex'));
 	    }, function(err, result){
 	      branch_hex = result;
 	    });
@@ -289,11 +284,14 @@ Jobs.prototype = {
 
 	  function(callback) {
 	    var namecoin_submission = 
-		  coinbase + block_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
+		  coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
 	    console.log("namecoin hash:%s\n",self.namecoin_hash);
 	    console.log("namecoin  aux:%s\n",namecoin_submission);
 	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
 				  function(err,res){
+				     console.log("Coinbase:%s",coinbase);
+				     console.log("Block Hash:%s",parent_hash);
+				     console.log("Parent Header:%s",parent_header);
 				     console.log("Error:%s",err);
 				     console.log("Result:%s",JSON.stringify(res));
 				  });
