@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Pool Stats</title>
+    <script type="text/javascript" src="js/jquery-2.0.0.min.js"></script>
+    <script type="text/javascript" src="js/status.js"></script>
+    <script>
+      var stats = new poolstatus('http://192.168.0.11:8334/');
+      stats.refresh();
+      setInterval(stats.refresh,2000);
+    </script>
+  </head>
+  <body>
+    <div id="shares"></div><br>
+    <div id="jobs"></div><br>
+    <div id="hashrate"></div><br>
+    <p>Found Blocks</p><br>
+    <div id="blocks"></div><br>
+    <p>Staled Blocks</p><br>
+    <div id="stales"></div><br>
+    <div id="msg"></div><br>
+    <div id="data"></div><br>
+  </body>
+</html>
