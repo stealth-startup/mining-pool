@@ -170,9 +170,16 @@ Jobs.prototype = {
     console.log("updating namecoin");
     var self = this;
     namecoind.getauxblock(function(err,aux_pow) {
-      self.namecoin_target = self.reverse_hex(aux_pow.target);
-      self.namecoin_hash = aux_pow.hash;
-      self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
+      if(!err) {
+	self.namecoin_status = true;
+	self.namecoin_target = self.reverse_hex(aux_pow.target);
+	self.namecoin_hash = aux_pow.hash;
+	self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
+      } else {
+	console.log("namecoin not running");
+	self.merged_script = new Buffer(0);
+	self.namecoin_status = false;
+      }
     });
     
   },
@@ -246,20 +253,24 @@ Jobs.prototype = {
     var hash = dhash(buf).reverse();
     var res = ('0000000000000000000000000000000000000000000000000000000000000000'+hash.toString('hex')).slice(-64);
     var target = this.target;
-    var namecoin_target = this.namecoin_target;
+
     var pow = res<target;
-    var aux_pow = res<namecoin_target;
-    // var aux_pow = true;
+    console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
+
+    if(this.namecoin_running) {
+      var namecoin_target = this.namecoin_target;
+      var aux_pow = res<namecoin_target;
+      console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
+      // var aux_pow = true;
+    } else {
+      aux_pow = false;
+    }
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
     var staled = (coinbase === undefined);
-
-    console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
-    console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
-
     
-    if(aux_pow && !staled) {
+    if(aux_pow) {
       // We found a namecoin block
       // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
       var branch_count;
@@ -346,7 +357,7 @@ Jobs.prototype = {
 	  }
 	]);      
     }
-    return {'found':pow,'staled':staled,'hash':res};
+    return {'found':pow,'found-aux':aux_pow,'staled':staled,'hash':res};
   }
 };
 

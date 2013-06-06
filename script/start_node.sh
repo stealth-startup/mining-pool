@@ -14,9 +14,17 @@ CheckProcess()
     return 1
   fi
 }
- 
+
+COUNTER=0
+
  
 while [ 1 ] ; do
+  COUNTER=$[COUNTER+1]
+  if [ $COUNTER -gt 100 ];
+  then
+    ps -ef | grep '\-p 83' | grep -v grep | awk '{print $2}' | xargs kill -9
+    COUNTER=0
+  fi
 
  CheckProcess "8334"
  CheckQQ_RET=$?
@@ -53,9 +61,19 @@ while [ 1 ] ; do
      bitcoind --daemon
  fi
 
+ CheckProcess "namecoind"
+ CheckQQ_RET=$?
+ if [ $CheckQQ_RET -eq 1 ];
+ then
+     namecoind -daemon
+ fi
+
 ./blocknotify.sh
 
+
 sleep 300
+
+
 
 done
 
