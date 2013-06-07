@@ -1,3 +1,14 @@
+function to_dur(msec) {
+  msec = msec/1000;
+  var hours = Math.floor(msec/3600);
+  msec = msec%3600;
+  var minutes = Math.floor(msec/60);
+  msec = msec%60;
+  var secs = Math.floor(msec);
+  return hours + " Hours "+ minutes+ " Minutes "+ secs + " Seconds";
+}
+
+
 function poolstatus(url) {
   var self = this;
   this.url = url;
@@ -35,31 +46,68 @@ function poolstatus(url) {
   };
 
   this.render_data = function(data) {
-    $("#data").text(JSON.stringify(data));
+
+    var tpl = "Uptime {{uptime}}:<table><tr><th>Worker</th><th>Jobs</th><th>Shares</th><tr>" + 
+      "{{#workers}}<tr><td>{{ip}}</td><td>{{jobs}}</td><td>{{shares}}</td></tr>{{/workers}}</table>";
+    
+    var html = Mustache.to_html(tpl, data);
+    $("#data").html(html);
   };
 
   this.refresh = function(callback) {
     $.ajax({
-      type: 'POST',
-      url: self.url,
-      crossDomain: true,
-      data: '{"jsonrpc":"2","id":"1","method":"stats","params":[]}',
-      dataType: 'json',
-      success: function(responseData, textStatus, jqXHR) {
-	$("#msg").text("");
-	var data = JSON.parse(responseData.result);
-	// self.render_data(data);
-	var cur_time = +new Date();
-	self.shares = data.shares;
-	self.jobs = data.jobs;
-	self.blocks = data.blocks;
-	self.stales = data.stales;
-	self.hashrate = self.shares/((cur_time-data.start)/1000.0) * 4.2;
-	self.render();
+	     type: 'POST',
+	     url: self.url,
+	     crossDomain: true,
+	     data: '{"jsonrpc":"2","id":"1","method":"stats","params":[]}',
+	     dataType: 'json',
+	     success: function(responseData, textStatus, jqXHR) {
+	       $("#msg").text("");
+	       var data = JSON.parse(responseData.result);
+	       var result = {};
+	       result.uptime = to_dur(+new Date()-data.start);
+	       
+	       var stats = new Array();
+	       var workers = JSON.parse(data.workers);
+	       var client_ips = new Array();
+	       for(var k in workers) client_ips.push(k);
+	       console.log(client_ips);
+	       client_ips.sort(function(a,b) {
+				 var num_a = a.split('.');
+				 var num_b = b.split('.');
+				 var test = (parseInt(num_a[2])*1000+parseInt(num_a[3])) - (parseInt(num_b[2])*1000+parseInt(num_b[3]));
+				 if(test>0) {
+				   return 1;
+				 } else if(test<0) {
+				   return -1;
+				 } else return 0;
+			       }
+			      );
+	       
+	       client_ips.forEach(function(ip) {
+				    workers[ip].ip = ip;
+				    stats.push(workers[ip]);
+				  });
+
+	       
+	       result.workers = stats;
+	       
+	       self.render_data(result);
+
+	       // self.blocks = data.blocks;
+
+	
+	       // self.render_data(data);
+	       // var cur_time = +new Date();
+	       // self.shares = data.shares;
+	       // self.jobs = data.jobs;
+	       // self.stales = data.stales;
+	       // self.hashrate = self.shares/((cur_time-data.start)/1000.0) * 4.2;
+	       // self.render();
       },
-      error: function (responseData, textStatus, errorThrown) {
-	$("#msg").text("Cannot connect to server");
-      }
-    });
+	     error: function (responseData, textStatus, errorThrown) {
+	       $("#msg").text("Cannot connect to server");
+	     }
+	   });
   };
 };

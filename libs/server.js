@@ -47,13 +47,13 @@ function getwork(args, opt, callback) {
 
 function update(args,opt,callback) {
   job.update_block();
-  console.log("Updated At:%s",new Date());
+  console.log("BitCoin Updated At:%s",new Date());
   callback(null,true);
 };
 
 function update_namecoin(args,opt,callback) {
   job.update_namecoin_block();
-  console.log("Updated At:%s",new Date());
+  console.log("NameCoin Updated At:%s",new Date());
   callback(null,true);
 }
 
