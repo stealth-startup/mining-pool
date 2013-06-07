@@ -256,10 +256,10 @@ Jobs.prototype = {
 
     var pow = res<target;
     console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
-
-    if(this.namecoin_running) {
+    var aux_pow;
+    if(this.namecoin_status) {
       var namecoin_target = this.namecoin_target;
-      var aux_pow = res<namecoin_target;
+       aux_pow = res<namecoin_target;
       console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
       // var aux_pow = true;
     } else {
