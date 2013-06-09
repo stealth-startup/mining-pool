@@ -15,45 +15,12 @@ CheckProcess()
   fi
 }
 
-COUNTER=0
+forever start -w ~/mining-pool/libs/server.js -p 8334
+forever start -w ~/mining-pool/libs/server.js -p 8335
+forever start -w ~/mining-pool/libs/server.js -p 8336
 
  
 while [ 1 ] ; do
-  COUNTER=$[COUNTER+1]
-  if [ $COUNTER -gt 100 ];
-  then
-    ps -ef | grep '\-p 83' | grep -v grep | awk '{print $2}' | xargs kill -9
-    COUNTER=0
-  fi
-
- CheckProcess "8334"
- CheckQQ_RET=$?
- if [ $CheckQQ_RET -eq 1 ];
- then
-  node mining-pool/libs/server.js -p 8334 >/dev/null 2>/dev/null &
- fi
-
- CheckProcess "8335"
- CheckQQ_RET=$?
- if [ $CheckQQ_RET -eq 1 ];
- then
-  node mining-pool/libs/server.js -p 8335 >/dev/null 2>/dev/null &
- fi
-
- CheckProcess "8336"
- CheckQQ_RET=$?
- if [ $CheckQQ_RET -eq 1 ];
- then
-  node mining-pool/libs/server.js -p 8336 >/dev/null 2>/dev/null &
- fi
-
- CheckProcess "8337"
- CheckQQ_RET=$?
- if [ $CheckQQ_RET -eq 1 ];
- then
-  node mining-pool/libs/server.js -p 8337 >/dev/null 2>/dev/null &
- fi
-
  CheckProcess "bitcoind"
  CheckQQ_RET=$?
  if [ $CheckQQ_RET -eq 1 ];
@@ -69,11 +36,8 @@ while [ 1 ] ; do
  fi
 
 ./blocknotify.sh
-
+./blocknotify_namecoin.sh
 
 sleep 300
-
-
-
 done
 
