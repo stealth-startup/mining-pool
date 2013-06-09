@@ -23,13 +23,14 @@ job.update_namecoin_block();
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
   console.log( ip + " Asks for job\n");
-  if(!workers[ip]) workers[ip] = {"shares":0,"jobs":0};
+  if(!workers[ip]) workers[ip] = {"shares":0,"jobs":0,"last_seen":+new Date()};
   
   if(args.length==0) {
     workers[ip].jobs++;
     callback(null,job.getwork());
   } else {
     workers[ip].shares++;
+    workers[ip].last_seen = +new Date();
     var res = job.submit(args[0].slice(0,160));
     // console.log(res);
     if(res.found) {

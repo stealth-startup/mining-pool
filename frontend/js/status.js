@@ -8,6 +8,16 @@ function to_dur(msec) {
   return hours + " Hours "+ minutes+ " Minutes "+ secs + " Seconds";
 }
 
+function to_dur_short(msec) {
+  msec = msec/1000;
+  var hours = Math.floor(msec/3600);
+  msec = msec%3600;
+  var minutes = Math.floor(msec/60);
+  msec = msec%60;
+  var secs = Math.floor(msec);
+  return hours + ":"+ minutes+ ":" + secs;
+}
+
 
 function poolstatus(url) {
   var self = this;
@@ -47,8 +57,8 @@ function poolstatus(url) {
 
   this.render_data = function(data) {
 
-    var tpl = "Uptime {{uptime}}:<table><tr><th>Worker</th><th>Jobs</th><th>Shares</th><tr>" + 
-      "{{#workers}}<tr><td>{{ip}}</td><td>{{jobs}}</td><td>{{shares}}</td></tr>{{/workers}}</table>";
+    var tpl = "Uptime {{uptime}}:<table><tr><th>Worker</th><th>Jobs</th><th>Shares</th><th>Last Seen</th><tr>" + 
+      "{{#workers}}<tr><td>{{ip}}</td><td>{{jobs}}</td><td>{{shares}}</td><td>{{last_seen}}</td></tr>{{/workers}}</table>";
     
     var html = Mustache.to_html(tpl, data);
     $("#data").html(html);
@@ -86,6 +96,7 @@ function poolstatus(url) {
 	       
 	       client_ips.forEach(function(ip) {
 				    workers[ip].ip = ip;
+				    workers[ip].last_seen = to_dur_short(new Date() - workers[ip].last_seen);
 				    stats.push(workers[ip]);
 				  });
 
