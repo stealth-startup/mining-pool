@@ -42,7 +42,7 @@ var getScriptPubKey = function (addr) {
   var pad = new Buffer(nPad);
   pad.fill(0);
   result = Buffer.concat([pad,result]);
-  console.log(result);
+  // console.log(result);
   var pubkeyhash = result.slice(1,-4);
   var script_begin = new Buffer([0x76,0xa9,0]);
   script_begin[2]=pubkeyhash.length;
@@ -50,4 +50,23 @@ var getScriptPubKey = function (addr) {
   return Buffer.concat([script_begin,pubkeyhash,script_end]);
 };
 
+
+var toVarIntHex = function(count) {
+  var b_count;
+  if(count<0xfd) {
+    b_count=new Buffer(1);
+    b_count[0]=count;
+  } else if(count<0xffff) {
+    b_count=new Buffer(3);
+    b_count[0]=0xfd;
+    b_count.writeUInt16LE(count,1);
+  } else if(count<0xffffffff) {
+    b_count=new Buffer(5);
+    b_count[0]=0xfe;
+    b_count.writeUInt32LE(count,1);
+  }
+  return b_count.toString('hex');
+};
+
 module.exports.getScriptPubKey = getScriptPubKey;
+module.exports.toVarIntHex = toVarIntHex;

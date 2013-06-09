@@ -14,6 +14,7 @@ var commands = module.exports.commands = [
 'getaddednodeinfo',
 'getaddressesbyaccount',
 'getbalance',
+'getauxblock',
 'getblock',
 'getblockcount',
 'getblockhash',
