@@ -17,8 +17,16 @@ console.timeEnd("calculate midstate 10000 times");
 var kapitalize = require('./kapitalize')({
     user:'naituida',
     pass:'123',
-    host:'192.168.0.2',
+    host:'127.0.0.1',
     port:8080
+});
+
+// namecoin
+var namecoind = require('./kapitalize')({
+    user:'naituida',
+    pass:'123',
+    host:'127.0.0.1',
+    port:8081
 });
 
 // list num of transactions to include in next block
