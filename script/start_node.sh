@@ -15,9 +15,9 @@ CheckProcess()
   fi
 }
 
-forever start -w ~/mining-pool/libs/server.js -p 8334
-forever start -w ~/mining-pool/libs/server.js -p 8335
-forever start -w ~/mining-pool/libs/server.js -p 8336
+forever start ~/mining-pool/libs/server.js -p 8334
+forever start ~/mining-pool/libs/server.js -p 8335
+forever start ~/mining-pool/libs/server.js -p 8336
 
  
 while [ 1 ] ; do
