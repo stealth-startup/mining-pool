@@ -51,11 +51,16 @@ function toIPSortedArray(data) {
   var res = new Array();
   cur_ips.forEach(function(ip){
 		    data[ip].ip=ip;
+		    data[ip].link = toLink(ip);
 		    res.push(data[ip]);
 		  });
   return res;	     
 };
 
+
+function toLink(ip) {
+  return "<a href=\"http://" + ip + ":8000\">" + ip + "</a>";
+};
 
 function poolstatus(url) {
   var self = this;
@@ -89,7 +94,7 @@ function poolstatus(url) {
   
   this.render_data = function(data) {
     var tpl_data = "<table class='altrowstable' id='alternateworker'><tr><th>Worker</th><th>Shares</th><th>Hash Rate</th><th>Last Seen</th><tr>" + 
-      "{{#workers}}<tr><td>{{ip}}</td><td>{{last_shares}}</td><td>{{ghs}}</td><td>{{last_seen}}</td></tr>{{/workers}}</table>";
+      "{{#workers}}<tr><td>{{&link}}</td><td>{{last_shares}}</td><td>{{ghs}}</td><td>{{last_seen}}</td></tr>{{/workers}}</table>";
 
     var tpl_header = 
       "<table><tr><td align='right'><b>Server:</b></td><td>{{url}}</td></tr>" + 
@@ -130,7 +135,7 @@ function poolstatus(url) {
 		   var ghs;
 		   if(self.workers[ip].shares.length>=10) {
 		     self.workers[ip].shares = self.workers[ip].shares.slice(1);  
-		     ghs = Math.floor((cur_worker.shares-self.workers[ip].shares[0])/18*4.2);
+		     ghs = ((cur_worker.shares-self.workers[ip].shares[0])/18*4.2).toFixed(2);
 		   } else {
 		     ghs = 0;		     
 		   }
@@ -146,7 +151,7 @@ function poolstatus(url) {
 	       	       
 	       self.blocks = data.blocks;
 	       result.workers = toIPSortedArray(self.workers);
-	       result.hashrate = result.workers.reduce(function(prev,cur){return prev+cur.ghs;},0);
+	       result.hashrate = result.workers.reduce(function(prev,cur){return prev+parseFloat(cur.ghs);},0).toFixed(2);
 	       result.url = self.url;
 	       self.render_data(result);
       },
