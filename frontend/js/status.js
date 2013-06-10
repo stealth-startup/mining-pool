@@ -9,6 +9,7 @@ function to_dur(msec) {
 }
 
 function to_dur_short(msec) {
+  if(msec<0) msec = 0;
   msec = msec/1000;
   var hours = Math.floor(msec/3600);
   msec = msec%3600;
@@ -36,7 +37,9 @@ function altRows(id){
 
 function toIPSortedArray(data) {
   var cur_ips = new Array();
-  for(var k in data) cur_ips.push(k);
+  for(var k in data) {
+    if (k!='undefined') cur_ips.push(k);
+  }
   cur_ips.sort(function(a,b) {
   			 var num_a = a.split('.');
   			 var num_b = b.split('.');
