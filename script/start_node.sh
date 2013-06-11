@@ -15,9 +15,9 @@ CheckProcess()
   fi
 }
 
-forever start -s ~/mining-pool/libs/server.js -p 8334
-forever start -s ~/mining-pool/libs/server.js -p 8335
-forever start -s ~/mining-pool/libs/server.js -p 8336
+forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8334
+forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8335
+forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8336
 
 while [ 1 ] ; do
  CheckProcess "bitcoind"
