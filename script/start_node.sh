@@ -15,11 +15,17 @@ CheckProcess()
   fi
 }
 
+forever stopall
 forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8334
 forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8335
 forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8336
 
+i="0"
+
 while [ 1 ] ; do
+
+ i=$[$i+1]
+ 
  CheckProcess "bitcoind"
  CheckQQ_RET=$?
  if [ $CheckQQ_RET -eq 1 ];
@@ -36,6 +42,11 @@ while [ 1 ] ; do
 
 ./blocknotify.sh
 ./blocknotify_namecoin.sh
+
+if (("$i" > "100")); then
+		i="0"
+		forever restartall
+fi
 
 sleep 300
 done
