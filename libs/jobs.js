@@ -248,8 +248,8 @@ Jobs.prototype = {
 
     var pow = res<target;
     if(pow) {
-      console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
-    };
+     console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
+    }
     var aux_pow;
     if(this.namecoin_status) {
       var namecoin_target = this.namecoin_target;
@@ -268,6 +268,7 @@ Jobs.prototype = {
     if(pow && !staled) {
       // LMFAO!!!! We found a block!!!!
       // Let's build it!!!
+      
 
       var b_count;
       var count_hex;
@@ -309,8 +310,8 @@ Jobs.prototype = {
 	]);      
     }
 
-
-    if(aux_pow) {
+      if(false) {
+    // if(aux_pow) {
       // We found a namecoin block
       // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
       var branch_count;
