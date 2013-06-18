@@ -18,7 +18,7 @@ var start = +new Date();
 var workers = {};
 
 job.update_block();
-job.update_namecoin_block();
+// job.update_namecoin_block();
 
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
@@ -68,7 +68,7 @@ function stats(args,opt,callback) {
 
 server.expose('getwork', getwork);
 server.expose('update',update);
-server.expose('update_namecoin',update_namecoin);
+// server.expose('update_namecoin',update_namecoin);
 server.expose('stats',stats);
 
 server.listen(argv.p, '0.0.0.0');

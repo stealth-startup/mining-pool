@@ -33,12 +33,12 @@ while [ 1 ] ; do
      bitcoind --daemon
  fi
 
- CheckProcess "namecoind"
- CheckQQ_RET=$?
- if [ $CheckQQ_RET -eq 1 ];
- then
-     namecoind -daemon
- fi
+ # CheckProcess "namecoind"
+ # CheckQQ_RET=$?
+ # if [ $CheckQQ_RET -eq 1 ];
+ # then
+ #     namecoind -daemon
+ # fi
 
 # ./blocknotify.sh
 # ./blocknotify_namecoin.sh

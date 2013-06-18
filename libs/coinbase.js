@@ -22,7 +22,8 @@ t_vout_count[0]=1;
 var t_locktime = new Buffer(4);
 t_locktime.fill(0);
 
-var build_coinbase_tx = function(addr,amount,height,extranonce,merged_script) {
+var build_coinbase_tx = function(addr,amount,height,extranonce// ,merged_script
+				) {
 
   var coinbase_begin = new Buffer(5);
   coinbase_begin.writeUInt32LE(height,1);
@@ -36,7 +37,8 @@ var build_coinbase_tx = function(addr,amount,height,extranonce,merged_script) {
   var coinbase_extra_nonce = new Buffer(4);
   coinbase_extra_nonce.writeUInt32LE(extranonce,0);
 
-  var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce,merged_script]);
+  var coinbase = Buffer.concat([coinbase_begin,coinbase_msg,coinbase_extra_nonce// ,merged_script
+			       ]);
 
   var coinbase_len = new Buffer(1);
   coinbase_len[0] =  coinbase.length;

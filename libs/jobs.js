@@ -202,7 +202,8 @@ Jobs.prototype = {
     async.series(
       {
 	one:function(callback) {
-	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),self.merged_script);
+	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce()// ,self.merged_script
+					       );
 	  coinbase_hash = dhash(self.coinbase_tx); 
 	  callback(null,coinbase_hash);
 	},
@@ -250,14 +251,14 @@ Jobs.prototype = {
     if(pow) {
      console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
     }
-    var aux_pow;
-    if(this.namecoin_status) {
-      var namecoin_target = this.namecoin_target;
-      aux_pow = res<namecoin_target;
-      // console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
-    } else {
-      aux_pow = false;
-    }
+    // var aux_pow;
+    // if(this.namecoin_status) {
+    //   var namecoin_target = this.namecoin_target;
+    //   aux_pow = res<namecoin_target;
+    //   // console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
+    // } else {
+    //   aux_pow = false;
+    // }
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
@@ -310,48 +311,48 @@ Jobs.prototype = {
 	]);      
     }
 
-      if(false) {
+
     // if(aux_pow) {
       // We found a namecoin block
       // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
-      var branch_count;
-      var branch_hex;
-      var parent_header=block_header;
-      var parent_hash=self.reverse_hex(res);
-      async.waterfall(
-	[
-	  function(callback) {
-	    branch_count = util.toVarIntHex(self.merkle_branch.length);
-	    callback(null);
-	  },
+    //   var branch_count;
+    //   var branch_hex;
+    //   var parent_header=block_header;
+    //   var parent_hash=self.reverse_hex(res);
+    //   async.waterfall(
+    // 	[
+    // 	  function(callback) {
+    // 	    branch_count = util.toVarIntHex(self.merkle_branch.length);
+    // 	    callback(null);
+    // 	  },
 	  
-	  function(callback) {
-	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
-			   cb(null,cur+item.toString('hex'));
-			 }, function(err, result){
-			   branch_hex = result;
-			 });
-	    callback(null);
-	  },
+    // 	  function(callback) {
+    // 	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
+    // 			   cb(null,cur+item.toString('hex'));
+    // 			 }, function(err, result){
+    // 			   branch_hex = result;
+    // 			 });
+    // 	    callback(null);
+    // 	  },
 
-	  function(callback) {
-	    var namecoin_submission = 
-	      coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
-	    console.log("[%s]NameCoin submitblock:%s",new Date(),raw_block);
-	    console.log("namecoin hash:%s\n",self.namecoin_hash);
-	    console.log("namecoin  aux:%s\n",namecoin_submission);
-	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
-				  function(err,res){
-				    console.log("Coinbase:%s",coinbase);
-				    console.log("Block Hash:%s",parent_hash);
-				    console.log("Parent Header:%s",parent_header);
-				    console.log("Error:%s",err);
-				    console.log("Result:%s",JSON.stringify(res));
-				  });
-	    callback(null);
-	  }
-	]);
-    };
+    // 	  function(callback) {
+    // 	    var namecoin_submission = 
+    // 	      coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
+    // 	    console.log("[%s]NameCoin submitblock:%s",new Date(),raw_block);
+    // 	    console.log("namecoin hash:%s\n",self.namecoin_hash);
+    // 	    console.log("namecoin  aux:%s\n",namecoin_submission);
+    // 	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
+    // 				  function(err,res){
+    // 				    console.log("Coinbase:%s",coinbase);
+    // 				    console.log("Block Hash:%s",parent_hash);
+    // 				    console.log("Parent Header:%s",parent_header);
+    // 				    console.log("Error:%s",err);
+    // 				    console.log("Result:%s",JSON.stringify(res));
+    // 				  });
+    // 	    callback(null);
+    // 	  }
+    // 	]);
+    // };
 
     return {'found':pow,'found-aux':aux_pow,'staled':staled,'hash':res};
   }
