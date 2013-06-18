@@ -16,9 +16,9 @@ CheckProcess()
 }
 
 forever stopall
-forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8334
-forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8335
-forever start -s -c /usr/local/bin/node ~/mining-pool/libs/server.js -p 8336
+forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8334
+forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8335
+forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8336
 
 i="0"
 
@@ -40,10 +40,10 @@ while [ 1 ] ; do
      namecoind -daemon
  fi
 
-./blocknotify.sh
-./blocknotify_namecoin.sh
+# ./blocknotify.sh
+# ./blocknotify_namecoin.sh
 
-if (("$i" > "100")); then
+if (("$i" > "15")); then
 		i="0"
 		forever restartall
 fi

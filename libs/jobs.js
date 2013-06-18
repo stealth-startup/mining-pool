@@ -15,18 +15,18 @@ var util = require('./util');
 var buffertools = require('buffertools');
 
 var bitcoind = require('./kapitalize')({
-  user:'naituida',
-  pass:'123',
-  host:'localhost',
-  port:8080
-});
+																				 user:'naituida',
+																				 pass:'123',
+																				 host:'localhost',
+																				 port:8080
+																			 });
 
 var namecoind = require('./kapitalize')({
-  user:'naituida',
-  pass:'123',
-  host:'localhost',
-  port:8081
-});
+																					user:'naituida',
+																					pass:'123',
+																					host:'localhost',
+																					port:8081
+																				});
 
 
 var crypto = require('crypto');
@@ -84,32 +84,31 @@ Jobs.prototype = {
     var self = this;
     async.waterfall(
       [
-	function(callback) {
-	  var inputs = txs.map(
-	    function(x){
-	      var buf=new Buffer(x.hash,'hex');
-	      return buf.reverse();
-	    });
-	  callback(null,inputs);
-	},
+				function(callback) {
+					var inputs = txs.map(
+						function(x){
+							var buf=new Buffer(x.hash,'hex');
+							return buf.reverse();
+						});
+					callback(null,inputs);
+				},
 
-	function(inputs,callback) {
-	  // console.log(inputs);
-	  inputs.unshift(new Buffer(0));
-	  var len = inputs.length;
-	  self.merkle_branch = [];
-	  while(len>1) {
-	    self.merkle_branch.push(inputs[1]);
-	    if(len%2==1) inputs.push(inputs.slice(-1)[0]);
-	    var new_inputs = [];
-	    for(var i=0;i<len;i=i+2) {
-	      new_inputs.push(dhash(Buffer.concat([inputs[i],inputs[i+1]])));
-	    }
-	    inputs=new_inputs;
-	    len=inputs.length;
-	  };
-	  callback(null);
-	}]);
+				function(inputs,callback) {
+					inputs.unshift(new Buffer(0));
+					var len = inputs.length;
+					self.merkle_branch = [];
+					while(len>1) {
+						self.merkle_branch.push(inputs[1]);
+						if(len%2==1) inputs.push(inputs.slice(-1)[0]);
+						var new_inputs = [];
+						for(var i=0;i<len;i=i+2) {
+							new_inputs.push(dhash(Buffer.concat([inputs[i],inputs[i+1]])));
+						}
+						inputs=new_inputs;
+						len=inputs.length;
+					};
+					callback(null);
+				}]);
     return self.merkle_branch;
   },
   
@@ -117,70 +116,70 @@ Jobs.prototype = {
     var self = this;
     bitcoind.getblocktemplate(
       function(err,res) {
-	async.waterfall(
-	  [
-	    function(callback) {
-	      self.merkle_to_coinbase = {};
-	      callback(null);
-	    },
-	    function(callback) {
-	      // console.log("parsing block template");
-	      self.extranonce = 0;
-	      self.height = res.height;
-	      self.target = res.target;
-	      // self.target = '00000000FFFF0000000000000000000000000000000000000000000000000000';
-	      self.amount = res.coinbasevalue;
-	      self.nbits = res.bits;
-	      self.txs = res.transactions;
-	      self.prevhash = res.previousblockhash;
-	      self.update_merkle_branch(self.txs);
-	      callback(null);
-	    } ,
+				if(!err) {
+					async.waterfall(
+						[
+							function(callback) {
+								self.merkle_to_coinbase = {};
+								callback(null);
+							},
+							function(callback) {
+								self.extranonce = 0;
+								self.height = res.height;
+								self.target = res.target;
+								self.amount = res.coinbasevalue;
+								self.nbits = res.bits;
+								self.txs = res.transactions;
+								self.prevhash = res.previousblockhash;
+								self.update_merkle_branch(self.txs);
+								callback(null);
+							} ,
+							
+							function(callback) {
+								var buf = new Buffer(self.prevhash,'hex');
+								var new_buf = new Buffer(32);
+								new_buf.fill(0);
+								buf.copy(new_buf, 28,  0,  4);
+								buf.copy(new_buf, 24,  4,  8);
+								buf.copy(new_buf, 20,  8, 12);
+								buf.copy(new_buf, 16, 12, 16);
+								buf.copy(new_buf, 12, 16, 20);
+								buf.copy(new_buf,  8, 20, 24);
+								buf.copy(new_buf,  4, 24, 28);
+								buf.copy(new_buf,  0, 28, 32);
+								self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
+								self.template_2 = self.nbits + self.b_padding;
+								callback(null);
+							},
 
-	    function(callback) {
-	      // console.log("build prev hash");
-	      var buf = new Buffer(self.prevhash,'hex');
-	      var new_buf = new Buffer(32);
-	      new_buf.fill(0);
-	      buf.copy(new_buf, 28,  0,  4);
-	      buf.copy(new_buf, 24,  4,  8);
-	      buf.copy(new_buf, 20,  8, 12);
-	      buf.copy(new_buf, 16, 12, 16);
-	      buf.copy(new_buf, 12, 16, 20);
-	      buf.copy(new_buf,  8, 20, 24);
-	      buf.copy(new_buf,  4, 24, 28);
-	      buf.copy(new_buf,  0, 28, 32);
-	      self.template_1 = Buffer.concat([self.b_version,new_buf]).toString('hex');
-	      self.template_2 = self.nbits + self.b_padding;
-	      callback(null);
-	    },
-
-	    function(callback) {
-	      console.log("Block Template Updated");
-	      // console.log(self);
-	      console.log(self.txs.length);
-	      callback(null);
-	    }
-	  ]);
-      }
-    );
+							function(callback) {
+								console.log("[%s]BitCoind Block Template Updated",new Date());
+								console.log("Total Transactions in Template:%s",self.txs.length);
+								callback(null);
+							}
+						]);
+				} else {
+					console.log("bitcoind is not running");
+					process.exit(1);
+				}			
+		});
   },
 
   update_namecoin_block: function() {
-    console.log("updating namecoin");
     var self = this;
     namecoind.getauxblock(function(err,aux_pow) {
-      if(!err) {
-	self.namecoin_status = true;
-	self.namecoin_target = self.reverse_hex(aux_pow.target);
-	self.namecoin_hash = aux_pow.hash;
-	self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
-      } else {
-	console.log("namecoin not running");
-	self.merged_script = new Buffer(0);
-	self.namecoin_status = false;
-      }
-    });
+														if(!err) {
+															self.namecoin_status = true;
+															self.namecoin_target = self.reverse_hex(aux_pow.target);
+															self.namecoin_hash = aux_pow.hash;
+															self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
+															console.log("[%s]NameCoin Updated",new Date());
+														} else {
+															console.log("namecoind is not running");
+															self.merged_script = new Buffer(0);
+															self.namecoin_status = false;
+														}
+													});
     
   },
 
@@ -202,41 +201,34 @@ Jobs.prototype = {
     var coinbase_hash;
     async.series(
       {
-	one:function(callback) {
-	  // console.log("building coinbase");
-	  // console.log(self.addr + self.amount + self.height);
-	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),self.merged_script);
-	  coinbase_hash = dhash(self.coinbase_tx); 
-	  callback(null,coinbase_hash);
-	},
-	
-	two:function(callback) {
-	  // console.log("coinbase:%s",self.coinbase_tx.toString('hex'));
-	  // console.log("coinbase_hash:%s",coinbase_hash.toString('hex'));
-	  self.merkle_root = self.get_merkle_root(coinbase_hash);
-	  self.merkle_to_coinbase[self.merkle_root]=self.coinbase_tx.toString('hex');
-	  callback(null,self.merkle_root);
-	},
-	
-	three:function(callback) {
-	  // console.log("merkle branch:");
-	  // self.merkle_branch.forEach(function(x){console.log(x.toString('hex'));});
-	  // console.log("merkle root:%s",self.merkle_root);
-	  var cur_time = Math.round(+new Date()/1000).toString(16);
-	  data = self.template_1 + self.merkle_root + cur_time + self.template_2;
-	  callback(null,data);
-	},
-	
-	four:function(callback) {
-	  target = self.reverse_hex(self.target);
-	  callback(null,target);
-	},
+				one:function(callback) {
+					self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),self.merged_script);
+					coinbase_hash = dhash(self.coinbase_tx); 
+					callback(null,coinbase_hash);
+				},
+				
+				two:function(callback) {
+					self.merkle_root = self.get_merkle_root(coinbase_hash);
+					self.merkle_to_coinbase[self.merkle_root]=self.coinbase_tx.toString('hex');
+					callback(null,self.merkle_root);
+				},
+				
+				three:function(callback) {
+					var cur_time = Math.round(+new Date()/1000).toString(16);
+					data = self.template_1 + self.merkle_root + cur_time + self.template_2;
+					callback(null,data);
+				},
+				
+				four:function(callback) {
+					target = self.reverse_hex(self.target);
+					callback(null,target);
+				},
 
-	response:function(callback) {
-	  var midstate = sha256.midstate(data.slice(0,128));
-	  work= {"midstate":midstate,"data":data,"hash1":self.hash1,"target":target,"padding":"dannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoing"};
-	  callback(null,JSON.stringify(work));
-	}
+				response:function(callback) {
+					var midstate = sha256.midstate(data.slice(0,128));
+					work= {"midstate":midstate,"data":data,"hash1":self.hash1,"target":target,"padding":"dannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoingdannywtfRUdoing"};
+					callback(null,JSON.stringify(work));
+				}
       }
     );
     // console.log(work);
@@ -255,13 +247,12 @@ Jobs.prototype = {
     var target = this.target;
 
     var pow = res<target;
-    console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
+    // console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
     var aux_pow;
     if(this.namecoin_status) {
       var namecoin_target = this.namecoin_target;
-       aux_pow = res<namecoin_target;
-      console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
-      // var aux_pow = true;
+      aux_pow = res<namecoin_target;
+      // console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
     } else {
       aux_pow = false;
     }
@@ -280,46 +271,44 @@ Jobs.prototype = {
       var count_hex;
       var tx_hex;
       async.waterfall(
-	[
-	  function(callback) {
-	    // console.log(self);
-	    var count = self.txs.length+1;
-	    // console.log("Tx count %s:",count);
-	    count_hex = util.toVarIntHex(count);
-	    callback(null);
-	  } ,
+				[
+					function(callback) {
+						var count = self.txs.length+1;
+						count_hex = util.toVarIntHex(count);
+						callback(null);
+					} ,
 
-	  function(callback) {
-	    async.reduce(self.txs,coinbase,function(cur,item,cb){
-	      cb(null,cur+item.data);
-	    }, function(err, result){
-	      tx_hex = result;
-	    });
-	    callback(null);			 
-	  } ,
+					function(callback) {
+						async.reduce(self.txs,coinbase,function(cur,item,cb){
+													 cb(null,cur+item.data);
+												 }, function(err, result){
+													 tx_hex = result;
+												 });
+						callback(null);			 
+					} ,
 
 
-	  function(callback) {
-	    var raw_block = block_header + count_hex + tx_hex;
-	    console.log("submitblock:%s",raw_block);
-	    bitcoind.submitblock(raw_block,
-				   function(err,res){
-				     // console.log("Error:%s",err);
-				     // console.log("Result:%s",JSON.stringify(res));
-				   }
-				  );
-	    callback(null);
-	  },
+					function(callback) {
+						var raw_block = block_header + count_hex + tx_hex;
+						console.log("[%s]BitCoin submitblock:%s",new Date(),raw_block);
+						bitcoind.submitblock(raw_block,
+																 function(err,res){
+																	 console.log("Error:%s",err);
+																	 console.log("Result:%s",JSON.stringify(res));
+																 }
+																);
+						callback(null);
+					},
 
-	  function(callback) {
-	    // self.update_block();
-	    callback(null);
-	  }
-	]);      
+					function(callback) {
+						// self.update_block();
+						callback(null);
+					}
+				]);      
     }
 
 
-        if(aux_pow) {
+    if(aux_pow) {
       // We found a namecoin block
       // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
       var branch_count;
@@ -327,37 +316,38 @@ Jobs.prototype = {
       var parent_header=block_header;
       var parent_hash=self.reverse_hex(res);
       async.waterfall(
-	[
-	  function(callback) {
-	    branch_count = util.toVarIntHex(self.merkle_branch.length);
-	    callback(null);
-	  },
-	  
-	  function(callback) {
-	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
-	      cb(null,cur+item.toString('hex'));
-	    }, function(err, result){
-	      branch_hex = result;
-	    });
-	    callback(null);
-	  },
+				[
+					function(callback) {
+						branch_count = util.toVarIntHex(self.merkle_branch.length);
+						callback(null);
+					},
+					
+					function(callback) {
+						async.reduce(self.merkle_branch,"",function(cur,item,cb){
+													 cb(null,cur+item.toString('hex'));
+												 }, function(err, result){
+													 branch_hex = result;
+												 });
+						callback(null);
+					},
 
-	  function(callback) {
-	    var namecoin_submission = 
-		  coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
-	    console.log("namecoin hash:%s\n",self.namecoin_hash);
-	    console.log("namecoin  aux:%s\n",namecoin_submission);
-	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
-				  function(err,res){
-				     console.log("Coinbase:%s",coinbase);
-				     console.log("Block Hash:%s",parent_hash);
-				     console.log("Parent Header:%s",parent_header);
-				     console.log("Error:%s",err);
-				     console.log("Result:%s",JSON.stringify(res));
-				  });
-	    callback(null);
-	  }
-	]);
+					function(callback) {
+						var namecoin_submission = 
+							coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
+						console.log("[%s]NameCoin submitblock:%s",new Date(),raw_block);
+						console.log("namecoin hash:%s\n",self.namecoin_hash);
+						console.log("namecoin  aux:%s\n",namecoin_submission);
+						namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
+																	function(err,res){
+																		console.log("Coinbase:%s",coinbase);
+																		console.log("Block Hash:%s",parent_hash);
+																		console.log("Parent Header:%s",parent_header);
+																		console.log("Error:%s",err);
+																		console.log("Result:%s",JSON.stringify(res));
+																	});
+						callback(null);
+					}
+				]);
     };
 
     return {'found':pow,'found-aux':aux_pow,'staled':staled,'hash':res};
