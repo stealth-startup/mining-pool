@@ -22,7 +22,7 @@ job.update_block();
 
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
-  // console.log( ip + " Asks for job\n");
+// console.log( ip + " Asks for job\n");
   if(!workers[ip]) workers[ip] = {"shares":0,"jobs":0,"last_seen":+new Date()};
   
   if(args.length==0) {
@@ -42,7 +42,7 @@ function getwork(args, opt, callback) {
 	blocks.push(block);
       };
     }
-    callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
+    callback(null,"trueDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHoleDannyIsAFuckingAssHole");
   }
 };
 

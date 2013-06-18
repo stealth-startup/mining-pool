@@ -354,7 +354,7 @@ Jobs.prototype = {
     // 	]);
     // };
 
-    return {'found':pow,'found-aux':aux_pow,'staled':staled,'hash':res};
+    return {'found':pow,'staled':staled,'hash':res};
   }
 };
 
