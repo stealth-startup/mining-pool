@@ -1,0 +1,109 @@
+<html>
+  <head>
+    <title>Pool Stats</title>
+    <style type="text/css">
+      table.altrowstable {
+      font-family: verdana,arial,sans-serif;
+      font-size:11px;
+      color:#333333;
+      border-width: 1px;
+      border-color: #a9c6c9;
+      border-collapse: collapse;
+      }
+      table.altrowstable th {
+      border-width: 1px;
+      padding: 8px;
+      border-style: solid;
+      border-color: #a9c6c9;
+      }
+      table.altrowstable td {
+      border-width: 1px;
+      padding: 8px;
+      border-style: solid;
+      border-color: #a9c6c9;
+      }
+      .oddrowcolor{
+      background-color:#d4e3e5;
+      }
+      .evenrowcolor{
+      background-color:#c3dde0;
+      }
+
+.header{
+   position: relative;
+   float: left;
+   left: 0.00%;
+   width: 100.00%;
+
+}
+.wrapper{
+   position: relative;
+   float: left;
+   left: 0.00%;
+   width: 100.00%;
+
+}
+.left{
+   position: relative;
+   float: left;
+   left: 0.00%;
+   width: 40.00%;
+
+}
+.right{
+   position: relative;
+   float: right;
+   right: 0.00%;
+   width: 60.00%;
+
+}
+.footer{
+   position: relative;
+   float: left;
+   left: 0.00%;
+   width: 100.00%;
+
+}
+body {
+   border-width: 0px;
+   padding: 0px;
+   margin: 0px;
+   font-size: 90%;
+}
+    </style>
+
+    <script type="text/javascript" src="js/jquery-2.0.0.min.js"></script>
+    <script src="js/mustache.js"></script>
+    <script type="text/javascript" src="js/status.js"></script>
+    <script>
+
+      var stats = new poolstatus('http://192.168.0.19:8334/');
+
+      stats.refresh();
+      setInterval(stats.refresh,2000);
+
+    </script>
+    <script>
+
+    </script>
+
+
+  </head>
+  <body>
+    <div class="header" id="info">
+      
+    </div>
+    <div class="wrapper">
+        <div class="left" id="data">
+
+        </div>
+        <div class="right" id="blocks">
+
+        </div> 
+    </div>
+    <div class="footer">
+    </div>
+    <div id="msg"></div></br>
+  </body>
+</html>
+
