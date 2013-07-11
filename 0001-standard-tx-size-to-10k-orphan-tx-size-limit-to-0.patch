@@ -1,0 +1,49 @@
+From b0d4cfa180c51eba5c848a7fb0a3c7fa865c98e3 Mon Sep 17 00:00:00 2001
+From: Zhong Zhuang <naituida@foxmail.com>
+Date: Wed, 10 Jul 2013 16:59:59 +0800
+Subject: [PATCH] standard tx size to 10k, orphan tx size limit to 0
+
+---
+ src/main.cpp | 4 ++--
+ src/main.h   | 3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/src/main.cpp b/src/main.cpp
+index 226d322..0842c13 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -300,7 +300,7 @@ bool AddOrphanTx(const CDataStream& vMsg)
+     // have been mined or received.
+     // 10,000 orphans, each of which is at most 5,000 bytes big is
+     // at most 500 megabytes of orphans:
+-    if (pvMsg->size() > 5000)
++    if (pvMsg->size() > 0)
+     {
+         printf("ignoring large orphan tx (size: %"PRIszu", hash: %s)\n", pvMsg->size(), hash.ToString().c_str());
+         delete pvMsg;
+@@ -3565,7 +3565,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv)
+         }
+         else if (fMissingInputs)
+         {
+-            AddOrphanTx(vMsg);
++	    AddOrphanTx(vMsg);
+ 
+             // DoS prevention: do not allow mapOrphanTransactions to grow unbounded
+             unsigned int nEvicted = LimitOrphanTxSize(MAX_ORPHAN_TRANSACTIONS);
+diff --git a/src/main.h b/src/main.h
+index 8e71e66..9783306 100644
+--- a/src/main.h
++++ b/src/main.h
+@@ -29,7 +29,8 @@ static const unsigned int MAX_BLOCK_SIZE = 1000000;
+ /** The maximum size for mined blocks */
+ static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/2;
+ /** The maximum size for transactions we're willing to relay/mine */
+-static const unsigned int MAX_STANDARD_TX_SIZE = MAX_BLOCK_SIZE_GEN/5;
++/* static const unsigned int MAX_STANDARD_TX_SIZE = MAX_BLOCK_SIZE_GEN/5; */
++static const unsigned int MAX_STANDARD_TX_SIZE = 10000;
+ /** The maximum allowed number of signature check operations in a block (network rule) */
+ static const unsigned int MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50;
+ /** The maximum number of orphan transactions kept in memory */
+-- 
+1.8.1.2
+
