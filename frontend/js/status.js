@@ -150,6 +150,7 @@ function poolstatus(url) {
 		   self.workers[ip].ghs = 0;
 		 };
 		 self.workers[ip].last_shares = cur_worker.shares;
+		 self.workers[ip].last_seen = cur_worker.last_seen;
 	       };
 	       	       
 	       self.blocks = data.blocks;
