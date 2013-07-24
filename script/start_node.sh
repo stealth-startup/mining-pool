@@ -17,8 +17,8 @@ CheckProcess()
 
 forever stopall
 forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8334
-forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8335
-forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8336
+#forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8335
+#forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8336
 
 i="0"
 
@@ -32,16 +32,6 @@ while [ 1 ] ; do
  then
      bitcoind --daemon
  fi
-
- # CheckProcess "namecoind"
- # CheckQQ_RET=$?
- # if [ $CheckQQ_RET -eq 1 ];
- # then
- #     namecoind -daemon
- # fi
-
-# ./blocknotify.sh
-# ./blocknotify_namecoin.sh
 
 if (("$i" > "15")); then
 		i="0"

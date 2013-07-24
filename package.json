@@ -9,6 +9,7 @@
   "author": "",
   "license": "BSD",
   "readmeFilename": "README.md",
+  "private":"true",
   "dependencies": {
     "int53": "~0.2.3",
     "endian-toggle": "0.0.0",
@@ -18,8 +19,5 @@
     "optimist": "~0.5.2",
     "jayson": "~1.0.9",
     "jsonparse": "0.0.5"
-  },
-  "scripts": {
-   "preinstall": "sudo npm install -g forever"
-  }  
+  }
 }

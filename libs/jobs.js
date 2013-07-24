@@ -144,8 +144,7 @@ Jobs.prototype = {
 	      }
 	    ]);
 	} else {
-	  console.log(JSON.stringify(err));
-	  console.log("config error or bitcoind is not running");
+	  console.log("bitcoin.conf error or bitcoind is downloading blocks, try 'bitcoind getblocktemplate' in command-line");
 	  process.exit(1);
 	}			
       });
