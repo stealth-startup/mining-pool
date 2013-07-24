@@ -403,7 +403,11 @@ Server.prototype.handleHttp = function(req, res)
 
       if (!conn.isStreaming) {
         res.writeHead(200, {'Content-Type': 'application/json',
-                            'Content-Length': encoded.length});
+                            'Content-Length': encoded.length,
+			    'Access-Control-Allow-Origin': '*',
+                            'Access-Control-Allow-Methods': 'GET, PUT, POST, DELETE, OPTIONS',
+                            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With'   
+			   });
         res.write(encoded);
         res.end();
       } else {
