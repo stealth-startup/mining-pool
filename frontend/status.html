@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pool Stats</title>
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+    <script type="text/javascript" src="js/jquery-2.0.0.min.js"></script>
+    <script src="js/mustache.js"></script>
+    <script type="text/javascript" src="js/status.js"></script>
+    <script>
+      var stats;
+      var timer;
+      function load_url() {    
+        var url="http://"+$("#url")[0].value;
+        if(timer) clearInterval(timer);
+        stats = new poolstatus(url);
+        stats.refresh();
+        timer=setInterval(stats.refresh,2000);
+        $("$url").select();
+      };
+    </script>
+  </head>
+  <body>
+    <div class="ui" id="ui"> 
+      <form action="#" onsubmit="load_url()">
+      <input id="url" value="127.0.0.1:8334"></input>
+      <button id="load-url" type="submit">Go</button>
+      </form>
+    </div>
+    <div class="header" id="info">
+      
+    </div>
+    <div class="wrapper">
+        <div class="left" id="data">
+
+        </div>
+        <div class="right" id="blocks">
+
+        </div> 
+    </div>
+    <div class="footer">
+    </div>
+    <div id="msg"></div><br/>
+  </body>
+</html>
+

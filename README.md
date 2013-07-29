@@ -92,17 +92,3 @@ bitcoin.conf. "coinbase_msg" is what you want to put in coinbase. And **do remem
 7. **Solo status**
 
    Open mining/frontend/status.html, type server url and go.  Compatabile with IE10/Firefox/Chrome
-        
-    
-   
-   
-   
-   
-      
-      
-      
-      
-      
-      
-      
-      

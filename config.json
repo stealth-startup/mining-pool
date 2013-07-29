@@ -1,0 +1,8 @@
+{
+  "bitcoind_ip"   : "127.0.0.1" ,
+  "bitcoind_port" : 8080 ,
+  "bitcoind_user" : "naituida",
+  "bitcoind_pwd"  : "123",
+  "coinbase_msg"  : "Mined By ASICMiner",
+  "solo_addr" : "1HtUGfbDcMzTeHWx2Dbgnhc6kYnj1Hp24i"
+}

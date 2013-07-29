@@ -1,38 +1,34 @@
-// # 1. Increase extranonce2
-// # 2. Build final extranonce
-// # 3. Put coinbase transaction together
-// # 4. Calculate coinbase hash
-// # 5. Calculate merkle root
-// # 6. Generate current ntime
-// # 7. Serialize header
-// # 8. calculate midstate 
-// # 9. header, midstate, target = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000', hash1= "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000"
-
 var async = require('async');
+
+var config = require('../config.json');
 
 var util = require('./util');
 
 var buffertools = require('buffertools');
 
 var bitcoind = require('./kapitalize')({
-					 user:'naituida',
-					 pass:'123',
-					 host:'localhost',
-					 port:8080
+					 'user': config.bitcoind_user,
+					 'pass': config.bitcoind_pwd,
+					 'host': config.bitcoind_ip,
+					 'port': config.bitcoind_port
 				       });
 
-var namecoind = require('./kapitalize')({
-					  user:'naituida',
-					  pass:'123',
-					  host:'localhost',
-					  port:8081
-					});
 
+var pubkey = util.getScriptPubKey(config.solo_addr);
+var msg = config.coinbase_msg;
 
 var crypto = require('crypto');
 var dhash = function(x) {return crypto.createHash('sha256').update(crypto.createHash('sha256').update(x).digest()).digest();};
 
-var sha256 = new (require('./sha256')).Sha256();                         
+var sha256;
+var is_native;
+try {
+  sha256 = require('./midstate/build/Release/hashlib');
+  is_native = true;
+} catch(e) {
+  sha256 = new (require('./sha256')).Sha256();                         
+  is_native = false;
+}
 
 require('buffertools');
 var toggle = require('endian-toggle');
@@ -42,14 +38,12 @@ var coinbaser=require('./coinbase');
 function Jobs () {
   this.b_version = new Buffer("00000002",'hex');
   this.b_padding = "00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
-  // this.addr = '13J6Mg58DBfx2aDZvFg76kjGUmYByuriry';
-  // this.addr = 'mtLsXbpDWNQDakQAtPjEN27qmgwYATkVEH';
-  // this.addr = 'mraCxCcYM3E1HTvGcTmxY2gzNm9fKfdbN8';
-  this.addr = '1HtUGfbDcMzTeHWx2Dbgnhc6kYnj1Hp24i';
+  this.addr = config.solo_addr;
   this.extranonce = 0;
   this.merkle_branch = [];
   this.height = 0;
   this.amount = 0;
+  this.is_native = is_native;
   this.nbits = "";
   this.prevhash = "";
   this.coinbase_tx = new Buffer(0);
@@ -159,28 +153,10 @@ Jobs.prototype = {
 	      }
 	    ]);
 	} else {
-	  console.log("bitcoind is not running");
+	  console.log("bitcoin.conf error or bitcoind is downloading blocks, try 'bitcoind getblocktemplate' in command-line");
 	  process.exit(1);
 	}			
       });
-  },
-
-  update_namecoin_block: function() {
-    var self = this;
-    namecoind.getauxblock(function(err,aux_pow) {
-			    if(!err) {
-			      self.namecoin_status = true;
-			      self.namecoin_target = self.reverse_hex(aux_pow.target);
-			      self.namecoin_hash = aux_pow.hash;
-			      self.merged_script = new Buffer('fabe6d6d'+aux_pow.hash+'01000000'+'00000000','hex');
-			      console.log("[%s]NameCoin Updated",new Date());
-			    } else {
-			      console.log("namecoind is not running");
-			      self.merged_script = new Buffer(0);
-			      self.namecoin_status = false;
-			    }
-			  });
-    
   },
 
   increase_extranonce : function(f) {
@@ -202,8 +178,7 @@ Jobs.prototype = {
     async.series(
       {
 	one:function(callback) {
-	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce()// ,self.merged_script
-					       );
+	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),pubkey,new Buffer(msg,'hex'));
 	  coinbase_hash = dhash(self.coinbase_tx); 
 	  callback(null,coinbase_hash);
 	},
@@ -232,7 +207,6 @@ Jobs.prototype = {
 	}
       }
     );
-    // console.log(work);
     return JSON.stringify(work);
   },
 
@@ -251,25 +225,13 @@ Jobs.prototype = {
     if(pow) {
      console.log("bitcoin  result:%s\nbitcoin  target:%s\nfound:%s\n",res,target,pow);
     }
-    // var aux_pow;
-    // if(this.namecoin_status) {
-    //   var namecoin_target = this.namecoin_target;
-    //   aux_pow = res<namecoin_target;
-    //   // console.log("namecoin result:%s\nnamecoin target:%s\nfound:%s\n",res,namecoin_target,aux_pow);
-    // } else {
-    //   aux_pow = false;
-    // }
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
-    var staled = (coinbase === undefined);
-    
 
-
-    if(pow && !staled) {
+    if(pow) {
       // LMFAO!!!! We found a block!!!!
       // Let's build it!!!
-      
 
       var b_count;
       var count_hex;
@@ -302,59 +264,10 @@ Jobs.prototype = {
 				 }
 				);
 	    callback(null);
-	  },
-
-	  function(callback) {
-	    // self.update_block();
-	    callback(null);
 	  }
 	]);      
     }
-
-
-    // if(aux_pow) {
-      // We found a namecoin block
-      // coinbase + bitcoin block hash + branch_count + merkle_branches + branch index(0x00000000) + aux branch count(0x00) + aux branch index(0x00000000) + bicoin blockheader
-    //   var branch_count;
-    //   var branch_hex;
-    //   var parent_header=block_header;
-    //   var parent_hash=self.reverse_hex(res);
-    //   async.waterfall(
-    // 	[
-    // 	  function(callback) {
-    // 	    branch_count = util.toVarIntHex(self.merkle_branch.length);
-    // 	    callback(null);
-    // 	  },
-	  
-    // 	  function(callback) {
-    // 	    async.reduce(self.merkle_branch,"",function(cur,item,cb){
-    // 			   cb(null,cur+item.toString('hex'));
-    // 			 }, function(err, result){
-    // 			   branch_hex = result;
-    // 			 });
-    // 	    callback(null);
-    // 	  },
-
-    // 	  function(callback) {
-    // 	    var namecoin_submission = 
-    // 	      coinbase + parent_hash + branch_count + branch_hex + "000000000000000000" + parent_header;
-    // 	    console.log("[%s]NameCoin submitblock:%s",new Date(),raw_block);
-    // 	    console.log("namecoin hash:%s\n",self.namecoin_hash);
-    // 	    console.log("namecoin  aux:%s\n",namecoin_submission);
-    // 	    namecoind.getauxblock(self.namecoin_hash,namecoin_submission,
-    // 				  function(err,res){
-    // 				    console.log("Coinbase:%s",coinbase);
-    // 				    console.log("Block Hash:%s",parent_hash);
-    // 				    console.log("Parent Header:%s",parent_header);
-    // 				    console.log("Error:%s",err);
-    // 				    console.log("Result:%s",JSON.stringify(res));
-    // 				  });
-    // 	    callback(null);
-    // 	  }
-    // 	]);
-    // };
-
-    return {'found':pow,'staled':staled,'hash':res};
+    return {'found':pow,'hash':res};
   }
 };
 
