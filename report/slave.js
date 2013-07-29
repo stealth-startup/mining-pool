@@ -1,14 +1,25 @@
-var faye = require('faye');
+var argv = require('optimist')
+    .usage('Usage: $0 -f [config_file]')
+    .demand(['f'])
+    .argv;
+
+
+
+var config=require("./"+argv.f);
+
+console.log(Object.keys(config));
+
 var p1 = new (require('./status'))('192.168.0.19',8334);
 var p2 = new (require('./status'))('192.168.0.19',8335);
 var p3 = new (require('./status'))('192.168.0.19',8336);
 
+var faye = require('faye');
 var client = new faye.Client('http://54.250.174.46/faye');
 // var client = new faye.Client('http://localhost:8123/faye');
 
-client.subscribe('/command',function(msg){
-  console.log(msg);
-});
+// client.subscribe('/command',function(msg){
+//   console.log(msg);
+// });
 
 
 function send_msg() {
@@ -29,4 +40,4 @@ function send_msg() {
   });
 }
 
-setInterval(send_msg,2000);
+//setInterval(send_msg,2000);
