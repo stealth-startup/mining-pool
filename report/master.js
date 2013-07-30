@@ -1,5 +1,6 @@
-var express = require('express'),
-    faye = require('faye');
+var express = require('express');
+var cons = require('consolidate');
+var faye = require('faye');
 
 var bayeux = new faye.NodeAdapter({
   mount:    '/faye',
@@ -7,7 +8,7 @@ var bayeux = new faye.NodeAdapter({
 });
 
 var server_count = 0;
-var pools = {};
+var pools  = {};
 var total_ghs = 0;
 
 var app = express();
@@ -16,15 +17,17 @@ app.configure(function () {
   app.use(express.static(__dirname + '/public'));
 });
 
+app.engine('html',cons.mustache);
+app.set('view engine','html');
+app.set('views', __dirname + '/views');
+
 app.get('/',function(req,res){ 
-  total_ghs = 0;
-  for(var url in pools) {
-    total_ghs += parseFloat(pools[url].hashrate);
-  }
-  var body = "Total Hash Rate:"+total_ghs+'</br>';
-  // res.setHeader('Content-Type', 'text/plain');
-  res.setHeader('Content-Length', body.length);
-  res.send(body);
+  // total_ghs = 0;
+  // for(var url in pools) {
+  //   total_ghs += parseFloat(pools[url].hashrate);
+  // }
+  // var body = "Total Hash Rate:"+total_ghs+'</br>';
+  res.render('index',pools);
 });
 
 app.get('/command/:name', function(req, res) {
@@ -34,11 +37,9 @@ app.get('/command/:name', function(req, res) {
 
 
 bayeux.bind('publish', function(clientId, channel, data) {
-  console.log(channel);
   if(channel=='/stat') {
-    var url = data.url;
-    pools[url] = data;
-    console.log(pools);
+    pools.info = data;
+    // console.log(pools);
   };
 });
 

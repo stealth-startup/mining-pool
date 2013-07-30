@@ -1,17 +1,15 @@
-var argv = require('optimist')
-    .usage('Usage: $0 -f [config_file]')
-    .demand(['f'])
-    .argv;
+// var argv = require('optimist')
+//     .usage('Usage: $0 -f [config_file]')
+//     .demand(['f'])
+//     .argv;
 
+// var config=require("./"+argv.f);
 
+var config=require('./config.json');
 
-var config=require("./"+argv.f);
+var urls = Object.keys(config).map(function(url){return [url.slice(0,-5),url.slice(-4)];});
 
-console.log(Object.keys(config));
-
-var p1 = new (require('./status'))('192.168.0.19',8334);
-var p2 = new (require('./status'))('192.168.0.19',8335);
-var p3 = new (require('./status'))('192.168.0.19',8336);
+var daemons = urls.map(function(url){return new (require('./status'))(url[0],url[1]);});
 
 var faye = require('faye');
 var client = new faye.Client('http://54.250.174.46/faye');
@@ -21,23 +19,22 @@ var client = new faye.Client('http://54.250.174.46/faye');
 //   console.log(msg);
 // });
 
+var async = require('async');
 
 function send_msg() {
-  p1.refresh(function(stat){
-    var msg = { url:stat.url, hashrate:stat.hashrate, blocks:stat.blocks , workers:Object.keys(stat.workers).length };
-    console.log(msg);
+  async.map(daemons,function(daemon,callback){
+    daemon.refresh(function(stat){callback(null,stat);});
+  },function(error,results){
+    if(error) {
+      console.log(error);return;
+    };
+    var msg = results.map(function(res){
+      var info =  { url:res.url, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
+      return info;
+    });
     client.publish('/stat',msg);
+    console.log("sent msg:"+msg);
   });
-  p2.refresh(function(stat){
-    var msg = { url:stat.url, hashrate:stat.hashrate, blocks:stat.blocks , workers:Object.keys(stat.workers).length };
-    console.log(msg);
-    client.publish('/stat',msg);
-  });
-  p3.refresh(function(stat){
-    var msg = { url:stat.url, hashrate:stat.hashrate, blocks:stat.blocks , workers:Object.keys(stat.workers).length };
-    console.log(msg);
-    client.publish('/stat',msg);
-  });
-}
+};
 
-//setInterval(send_msg,2000);
+setInterval(send_msg,2000);
