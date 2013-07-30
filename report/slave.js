@@ -1,15 +1,14 @@
-// var argv = require('optimist')
-//     .usage('Usage: $0 -f [config_file]')
-//     .demand(['f'])
-//     .argv;
+var argv = require('optimist')
+    .usage('Usage: $0 -f [config_file]')
+    .demand(['f'])
+    .argv;
 
-// var config=require("./"+argv.f);
-
-var config=require('./config.json');
+var config=require("./"+argv.f);
 
 var urls = Object.keys(config).map(function(url){return [url.slice(0,-5),url.slice(-4)];});
 
 var daemons = urls.map(function(url){return new (require('./status'))(url[0],url[1]);});
+
 
 var faye = require('faye');
 var client = new faye.Client('http://54.250.174.46/faye');

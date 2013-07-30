@@ -1,3 +1,8 @@
+var argv = require('optimist')
+    .usage('Usage: $0 -p [port]')
+    .default({'p':80})
+    .argv;
+
 var express = require('express');
 var cons = require('consolidate');
 var faye = require('faye');
@@ -8,14 +13,16 @@ var bayeux = new faye.NodeAdapter({
 });
 
 var server_count = 0;
+
 var pools  = {};
-var total_ghs = 0;
+
 
 var app = express();
 app.configure(function () {
   app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
 });
+
 
 app.engine('html',cons.mustache);
 app.set('view engine','html');
@@ -39,9 +46,8 @@ app.get('/command/:name', function(req, res) {
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
     pools.info = data;
-    // console.log(pools);
   };
 });
 
-var server = app.listen(8123);
+var server = app.listen(argv.p);
 bayeux.attach(server);
