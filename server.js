@@ -19,7 +19,7 @@ job.update_block();
 
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
-  console.log( ip + " Asks for job\n");
+  // console.log( ip + " Asks for job\n");
   if(!workers[ip]) workers[ip] = {"shares":0,"jobs":0,"last_seen":+new Date()};
   
   if(args.length==0) {
@@ -27,7 +27,7 @@ function getwork(args, opt, callback) {
     callback(null,job.getwork());
   } else {
     shares++;
-    console.log( ip + " Submits share");
+    // console.log( ip + " Submits share");
     workers[ip].shares++;
     workers[ip].last_seen = +new Date();
     var res = job.submit(args[0].slice(0,160));

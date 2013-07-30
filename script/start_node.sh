@@ -16,9 +16,9 @@ CheckProcess()
 }
 
 forever stopall
-forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8334
-#forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8335
-#forever start -c /usr/bin/node ~/mining-pool/libs/server.js -p 8336
+forever start -c /usr/bin/node ~/mining-pool/server.js -p 8334
+forever start -c /usr/bin/node ~/mining-pool/server.js -p 8335
+forever start -c /usr/bin/node ~/mining-pool/server.js -p 8336
 
 i="0"
 
