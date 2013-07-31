@@ -52,9 +52,6 @@ function update(args,opt,callback) {
   callback(null,true);
 };
 
-setInterval(update,180000);
-
-
 function stats(args,opt,callback) {
   var response = {};
   response.blocks = blocks;

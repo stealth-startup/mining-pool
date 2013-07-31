@@ -38,6 +38,7 @@ if (("$i" > "15")); then
 		forever restartall
 fi
 
+/home/david/blocknotify.sh
 sleep 300
 done
 
