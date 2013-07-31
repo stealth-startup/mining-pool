@@ -178,7 +178,7 @@ Jobs.prototype = {
     async.series(
       {
 	one:function(callback) {
-	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),pubkey,new Buffer(msg,'hex'));
+	  self.coinbase_tx = coinbaser.build_tx(self.addr,self.amount,self.height,self.increase_extranonce(),pubkey,new Buffer(msg));
 	  coinbase_hash = dhash(self.coinbase_tx); 
 	  callback(null,coinbase_hash);
 	},
