@@ -17,7 +17,6 @@ var workers = {};
 
 job.update_block();
 
-setInterval(job.update_block,180000);
 
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
@@ -52,6 +51,9 @@ function update(args,opt,callback) {
   console.log("BitCoin Updated At:%s",new Date());
   callback(null,true);
 };
+
+setInterval(update,180000);
+
 
 function stats(args,opt,callback) {
   var response = {};
