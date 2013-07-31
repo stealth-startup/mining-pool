@@ -17,6 +17,8 @@ var workers = {};
 
 job.update_block();
 
+setInterval(job.update_block,180000);
+
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
   // console.log( ip + " Asks for job\n");

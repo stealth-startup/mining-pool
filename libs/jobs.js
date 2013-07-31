@@ -52,7 +52,7 @@ function Jobs () {
   this.template_1="";
   this.template_2="";
   this.merkle_root = "";
-  this.target = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000';
+  this.target = '00000000000000ffffffffffffffffffffffffffffffffffffffffffffffffff';
   this.hash1 = "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000";
 
 };
