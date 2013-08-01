@@ -20,6 +20,8 @@ var client = new faye.Client('http://54.250.174.46/faye');
 
 var async = require('async');
 
+var count = 0;
+
 function send_msg() {
   async.map(daemons,function(daemon,callback){
     daemon.refresh(function(stat){callback(null,stat);});
@@ -32,8 +34,13 @@ function send_msg() {
       return info;
     });
     client.publish('/stat',msg);
-    console.log("sent msg:"+msg);
+    count++;
+    console.log(count);
+    console.log("sent msg:"+JSON.stringify(msg));
   });
 };
 
-setInterval(send_msg,2000);
+
+var interval = 20;
+setInterval(send_msg,interval*1000);
+send_msg();

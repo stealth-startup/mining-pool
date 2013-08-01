@@ -32,6 +32,8 @@ function PoolStatus(host,port) {
   this.workers = {};
   this.uptime = {};
 
+  var samples = 5;
+
   var client = jayson.client.http({
     port: port,
     hostname: host
@@ -56,17 +58,20 @@ function PoolStatus(host,port) {
       cur_worker.last_seen = last_seen;
       if(self.workers[ip]) {
 	var ghs;
-	if(self.workers[ip].shares.length>=10) {
+	if(self.workers[ip].shares.length>=samples) {
 	  self.workers[ip].shares = self.workers[ip].shares.slice(1);  
-	  ghs = ((cur_worker.shares-self.workers[ip].shares[0])/18*4.2).toFixed(2);
+	  self.workers[ip].updated = self.workers[ip].updated.slice(1);  
+	  ghs = ((cur_worker.shares-self.workers[ip].shares[0])/(+new Date()-self.workers[ip].updated[0])*1000*4.2).toFixed(2);
 	} else {
 	  ghs = 0;		     
 	}
 	self.workers[ip].shares.push(cur_worker.shares);
+	self.workers[ip].updated.push(+new Date());
 	self.workers[ip].ghs = ghs;
       } else {
 	self.workers[ip] = cur_worker;
 	self.workers[ip].shares = [self.workers[ip].shares];
+	self.workers[ip].updated = [+new Date()];
 	self.workers[ip].ghs = 0;
       };
       self.workers[ip].last_shares = cur_worker.shares;
