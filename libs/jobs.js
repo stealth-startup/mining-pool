@@ -257,7 +257,7 @@ Jobs.prototype = {
 	  function(callback) {
 	    var raw_block = block_header + count_hex + tx_hex;
 	    console.log("[%s]BitCoin submitblock:%s",new Date(),raw_block);
-	    console.log("[%s]BitCoin submitblock:%s",new Date(),'https://blockchain.info/block-index/'+pow);
+	    console.log("[%s]BitCoin submitblock:%s",new Date(),'https://blockchain.info/block-index/'+res);
 	    bitcoind.submitblock(raw_block,
 				 function(err,res){
 				   console.log("Error:%s",err);
