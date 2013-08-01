@@ -15,7 +15,7 @@ var bayeux = new faye.NodeAdapter({
 var server_count = 0;
 
 var pools  = {};
-
+pools.info = {};
 
 var app = express();
 app.configure(function () {
@@ -34,6 +34,11 @@ app.get('/',function(req,res){
   //   total_ghs += parseFloat(pools[url].hashrate);
   // }
   // var body = "Total Hash Rate:"+total_ghs+'</br>';
+  var total_ghs = 0;
+  for(var pool in Object.keys(pools.info)) {
+    total_ghs+=parseFloat(pools.info[pool].hashrate);
+  }
+  pools.total_ghs=total_ghs.toFixed(2);
   res.render('index',pools);
 });
 

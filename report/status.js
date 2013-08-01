@@ -79,7 +79,8 @@ function PoolStatus(host,port) {
     
     self.blocks = data.blocks;
 
-    self.hashrate = Object.keys(self.workers).reduce(function(prev,cur){return prev+parseFloat(self.workers[cur].ghs);},0).toFixed(2);
+    // self.hashrate = Object.keys(self.workers).reduce(function(prev,cur){return prev+parseFloat(self.workers[cur].ghs);},0).toFixed(2);
+    self.hashrate = (data.shares/(+new Date()-data.start)*1000*4.2).toFixed(2);
   };
 
   this.refresh = function(callback) {
