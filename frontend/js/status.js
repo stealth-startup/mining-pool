@@ -101,6 +101,8 @@ function poolstatus(url) {
 
     var tpl_header = 
       "<table><tr><td align='right'><b>Server:</b></td><td>{{url}}</td></tr>" + 
+	  "<tr><td align='right'><b>Height:</b></td><td>{{height}}</td></tr>" + 
+	  "<tr><td align='right'><b>Shares:</b></td><td>{{shares}}</td></tr>" + 
       "<tr><td align='right'><b>Hashrate:</b></td><td>{{hashrate}} GH/s</td></tr>" +
       "<tr><td align='right'><b>Uptime:</b></td><td>{{uptime}}</td></tr>"  +   
       "<tr><td align='right'><b>Workers:</b></td><td>{{workers.length}}</td></tr></table>";
@@ -157,6 +159,8 @@ function poolstatus(url) {
 	       result.workers = toIPSortedArray(self.workers);
 	       result.hashrate = result.workers.reduce(function(prev,cur){return prev+parseFloat(cur.ghs);},0).toFixed(2);
 	       result.url = self.url;
+		   result.shares = data.shares;
+		   result.height = data.height;
 	       self.render_data(result);
       },
 	     error: function (responseData, textStatus, errorThrown) {
