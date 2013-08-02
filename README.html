@@ -66,7 +66,7 @@ rpcport=8080
 rpcuser=asicminer
 rpcpassword=solo_mining_hurts
 rpcallowip=192.168.*.*
-blocknotify="PATH_TO blocknotify.sh"
+blocknotify="PATH_TO_YOUR blocknotify.sh"
 </code></pre>
 
 <p>"blocknotify.sh" is in directory ~/mining/script. If you login with user name "ubuntu", then modify last line as
@@ -95,6 +95,8 @@ bitcoin.conf. "coinbase_msg" is what you want to put in coinbase. And <strong>do
 </li>
 <li>
 <p><strong>Start solo mining</strong></p>
+
+<p>We have a sample script in mining/script "start_node.sh".    </p>
 
 <p>Suppose we need 3 process running on port 8334, 8335, 8336.</p>
 
@@ -136,7 +138,25 @@ forever start mining/server.js -p 8336
 <li>
 <p><strong>Solo status</strong></p>
 
-<p>Open mining/frontend/status.html, type server url and go.  Compatabile with IE10/Firefox/Chrome</p>
+<p>Open mining/frontend/status.html, type server url and go. Only works with Chrome right now and start chrome with parameter "--disable-web-security".</p>
+
+<p>For Ubuntu</p>
+
+<pre><code>chromium-web-browser --disable-web-security
+</code></pre>
+
+<p>For Mac</p>
+
+<pre><code>open -a Google\ Chrome --args --disable-web-security
+</code></pre>
+</li>
+<li>
+<p><strong>[Optional]C module for calculating midstate</strong></p>
+
+<pre><code>sudo npm install -g node-gyp
+cd mining/libs/midstate
+node-gyp configure build
+</code></pre>
 </li>
 </ol>
       </article>
@@ -147,5 +167,5 @@ forever start mining/server.js -p 8336
 
   </div>
   
-
-</body></html>
+</body>
+</html>

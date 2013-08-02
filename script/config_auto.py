@@ -1,3 +1,9 @@
+# Run this script to setup controllers and plug ethernet cable one by one
+# Install "requests": sudo easy_install requests
+# Example: you want to setup boards with IP from 192.168.100.1 to 192.168.100.100, solo server running on 192.168.0.5:8334, worker name set to myworker_100
+# python config_auto.py -r 100 -s 1 -e 100 -u 192.168.0.5 -p 8334 -w myworker_100
+# plug&play
+
 import requests
 import sys
 import argparse
@@ -51,7 +57,7 @@ for board in boards:
             print '\nProgram Stopped Manually!'
             raise
         except:
-            print "Cannot connect to rack " + str(rack) + ", board " + str(board)
+            print "Cannot config 192.168." + str(rack) + "." + str(board)
             continue
         break
 

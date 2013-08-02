@@ -31,7 +31,7 @@ Assume the code is in directory ~/mining
         rpcuser=asicminer
         rpcpassword=solo_mining_hurts
         rpcallowip=192.168.*.*
-        blocknotify="PATH_TO blocknotify.sh"
+        blocknotify="PATH_TO_YOUR blocknotify.sh"
 
     "blocknotify.sh" is in directory ~/mining/script. If you login with user name "ubuntu", then modify last line as
         blocknotify="/home/ubuntu/script/blocknotify.sh"
@@ -58,6 +58,8 @@ bitcoin.conf. "coinbase_msg" is what you want to put in coinbase. And **do remem
     
 6. **Start solo mining**
 
+   We have a sample script in mining/script "start_node.sh".    
+
    Suppose we need 3 process running on port 8334, 8335, 8336.
    
    Modify "blocknotify.sh" according to your ports
@@ -80,7 +82,7 @@ bitcoin.conf. "coinbase_msg" is what you want to put in coinbase. And **do remem
         forever start mining/server.js -p 8334
         forever start mining/server.js -p 8335
         forever start mining/server.js -p 8336
-        
+
    Stop
         
         forever stopall
@@ -91,4 +93,21 @@ bitcoin.conf. "coinbase_msg" is what you want to put in coinbase. And **do remem
         
 7. **Solo status**
 
-   Open mining/frontend/status.html, type server url and go.  Compatabile with IE10/Firefox/Chrome
+   Open mining/frontend/status.html, type server url and go. Only works with Chrome right now and start chrome with parameter "--disable-web-security".
+
+   For Ubuntu
+
+        chromium-web-browser --disable-web-security
+
+   For Mac
+
+        open -a Google\ Chrome --args --disable-web-security
+
+8. **[Optional]C module for calculating midstate**
+   
+
+        sudo npm install -g node-gyp
+        cd mining/libs/midstate
+        node-gyp configure build
+
+

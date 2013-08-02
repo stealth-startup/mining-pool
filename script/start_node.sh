@@ -1,3 +1,5 @@
+# Sample script to start solo mining
+# nohup ./start_node.sh &
 #!/bin/bash
 CheckProcess()
 {
@@ -15,10 +17,11 @@ CheckProcess()
   fi
 }
 
+# start all server
 forever stopall
-forever start -c /usr/bin/node ~/mining-pool/server.js -p 8334
-forever start -c /usr/bin/node ~/mining-pool/server.js -p 8335
-forever start -c /usr/bin/node ~/mining-pool/server.js -p 8336
+forever start ~/mining-pool/server.js -p 8334
+forever start ~/mining-pool/server.js -p 8335
+forever start ~/mining-pool/server.js -p 8336
 
 i="0"
 
@@ -26,6 +29,7 @@ while [ 1 ] ; do
 
  i=$[$i+1]
  
+ # Check if bitcoind is running
  CheckProcess "bitcoind"
  CheckQQ_RET=$?
  if [ $CheckQQ_RET -eq 1 ];
@@ -33,12 +37,15 @@ while [ 1 ] ; do
      bitcoind --daemon
  fi
 
-if (("$i" > "15")); then
-		i="0"
-		forever restartall
-fi
+ 
+ # Restartall server after certain loop
+ if (("$i" > "15")); then
+     i="0"
+     forever restartall
+ fi
 
-/home/david/blocknotify.sh
-sleep 300
+ # Call blocknotify.sh
+ ./blocknotify.sh
+ sleep 300
 done
 

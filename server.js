@@ -17,7 +17,6 @@ var workers = {};
 
 job.update_block();
 
-
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;
   // console.log( ip + " Asks for job\n");
@@ -32,15 +31,11 @@ function getwork(args, opt, callback) {
     workers[ip].shares++;
     workers[ip].last_seen = +new Date();
     var res = job.submit(args[0].slice(0,160));
-    // console.log(res);
     if(res.found) {
       var block = {};
       block.hash = res.hash;
       block.timestamp = (new Date()).toLocaleString();
-      
-      if(!res.staled) {
-	blocks.push(block);
-      };
+      blocks.push(block);
     }
     callback(null,"truetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetrue");
   }
