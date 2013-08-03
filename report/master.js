@@ -17,7 +17,7 @@ var merge = require('./merge');
 var server_count = 0;
 
 var pools  = {};
-pools.info = {};
+pools.info = [];
 
 var app = express();
 app.configure(function () {
