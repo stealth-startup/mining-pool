@@ -37,10 +37,11 @@ app.get('/',function(req,res){
   // }
   // var body = "Total Hash Rate:"+total_ghs+'</br>';
   var total_ghs = 0;
-  for(var pool in Object.keys(pools.info)) {
-    total_ghs+=parseFloat(pools.info[pool].hashrate);
+  for(var i=0;i<pools.info.length;i++){
+    total_ghs+=parseFloat(pools.info[i].hashrate);
   }
   pools.total_ghs=total_ghs.toFixed(2);
+  console.log(total_ghs);
   res.render('index',pools);
 });
 
@@ -53,6 +54,7 @@ app.get('/command/:name', function(req, res) {
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
     pools.info = merge(pools.info,data);
+//    console.log(data);
   };
 });
 
