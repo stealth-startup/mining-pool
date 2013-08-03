@@ -12,6 +12,8 @@ var bayeux = new faye.NodeAdapter({
   timeout:  45
 });
 
+var merge = require('./merge');
+
 var server_count = 0;
 
 var pools  = {};
@@ -50,7 +52,7 @@ app.get('/command/:name', function(req, res) {
 
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
-    pools.info = data;
+    pools.info = merge(pools.info,data);
   };
 });
 
