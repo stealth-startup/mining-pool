@@ -47,8 +47,17 @@ app.get('/',function(req,res){
   }
   pools.total_ghs=total_ghs.toFixed(2);
   console.log(total_ghs);
-  var series={'text':'hello','series':'[[1375583322832,100],[1375583332832,104],[1375583334832,102],[1375583622832,106]]'};
-  res.render('index',series);
+  connection(function(db){
+	       db.collection('hashrate')
+		 .find()
+		 .sort( { _id : -1 } )
+		 .limit(1000)
+		 .sort()
+		 .toArray(function(err,arr){
+			    var series = arr.map(function(item){return [item.time,parseFloat(item.rate)/1000];});
+			    res.render('index',{'series':JSON.stringify(series)});
+			  });
+	     });
 });
 
 app.get('/command/:name', function(req, res) {

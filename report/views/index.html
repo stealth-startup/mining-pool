@@ -9,8 +9,14 @@
 <!--   </tr> -->
 <!--   {{/info}} -->
 <!-- </table> -->
-
+<script type="text/javascript" src="js/highstock.js"></script>
 <script>
+Highcharts.setOptions({
+global: {
+useUTC: false
+}
+});
+
   $(function() {
   $('#container').highcharts('StockChart', {
   
@@ -34,6 +40,6 @@
   });
 </script>
 
-<script type="text/javascript" src="js/highstock.js"></script>
+
 <div id="container" style="height: 500px; min-width: 500px"></div>
 
