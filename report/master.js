@@ -50,11 +50,10 @@ app.get('/',function(req,res){
   connection(function(db){
 	       db.collection('hashrate')
 		 .find()
-		 .sort( { _id : -1 } )
-		 .limit(1000)
-		 .sort()
+		 .sort( { '_id' : -1 } )
+		 .limit(60480)
 		 .toArray(function(err,arr){
-			    var series = arr.map(function(item){return [item.time,parseFloat(item.rate)/1000];});
+			    var series = arr.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
 			    res.render('index',{'series':JSON.stringify(series)});
 			  });
 	     });

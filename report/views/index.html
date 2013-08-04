@@ -11,10 +11,11 @@
 <!-- </table> -->
 <script type="text/javascript" src="js/highstock.js"></script>
 <script>
+
 Highcharts.setOptions({
-global: {
-useUTC: false
-}
+  global: {
+  useUTC: false
+  }
 });
 
   $(function() {
@@ -22,8 +23,35 @@ useUTC: false
   
 
   rangeSelector : {
+buttons: [{
+type: 'hour',
+count: 6,
+text: '6h'
+},{
+type: 'hour',
+count: 12,
+text: '12h'
+}, {
+type: 'day',
+count: 1,
+text: '1d'
+}, {
+type: 'week',
+count: 1,
+text: '1w'
+}, {
+type: 'month',
+count: 1,
+text: '1m'
+}, {
+type: 'all',
+text: 'All'
+}],
+
   selected : 1
   },
+  
+
 
   title : {
   text : 'Hash Rate'
@@ -33,7 +61,8 @@ useUTC: false
   name : 'ASICMiner',
   data : {{series}}  ,
   tooltip: {
-  valueDecimals: 2
+  valueDecimals: 2,
+  valueSuffix: 'GH/s'
   }
   }]
   });
