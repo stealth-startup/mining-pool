@@ -26,9 +26,11 @@ app.configure(function () {
 });
 
 
-app.engine('html',cons.mustache);
+//app.engine('html',cons.mustache);
 app.set('view engine','html');
 app.set('views', __dirname + '/views');
+app.enable('view cache');
+app.engine('html',require('hogan-express'));
 
 app.get('/',function(req,res){ 
   // total_ghs = 0;
