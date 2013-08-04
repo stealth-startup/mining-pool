@@ -8,7 +8,7 @@ module.exports = function(callback) {
     callback(connectionInstance);
     return;
   }
-  var db = new Db('solo', new Server("127.0.0.1", Connection.DEFAULT_PORT, {auto_reconnect: true }), {w:1} );
+  var db = new Db('test', new Server("127.0.0.1", Connection.DEFAULT_PORT, {auto_reconnect: true }), {w:1} );
   db.open(function(error, databaseConnection) {
     if (error) throw new Error(error);
     connectionInstance = databaseConnection;

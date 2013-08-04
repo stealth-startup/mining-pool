@@ -52,11 +52,23 @@ app.get('/command/:name', function(req, res) {
   res.send(200);
 });
 
+var connection = require('./connection');
 
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
     pools.info = merge(pools.info,data);
-//    console.log(data);
+    var total_ghs = 0;
+    for(var i=0;i<pools.info.length;i++){
+      total_ghs+=parseFloat(pools.info[i].hashrate);
+    }
+    pools.total_ghs=total_ghs.toFixed(2);
+    console.log("got message");
+    connection(function(db) {
+		 db.collection('hashrate',function(err,col){
+				 col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+			       });
+	       });
+    //    console.log(data);
   };
 });
 
