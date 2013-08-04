@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Highstock Example</title>
+
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script type="text/javascript">
+$(function() {
+
+
+		// Create the chart
+		$('#container').highcharts('StockChart', {
+			
+
+			rangeSelector : {
+				selected : 1
+			},
+
+			title : {
+				text : 'AAPL Stock Price'
+			},
+			
+			series : [{
+				name : 'AAPL',
+				data : [[1375583322832,100],[1375583332832,104],[1375583334832,102],[1375583622832,106]],
+				tooltip: {
+					valueDecimals: 2
+				}
+			}]
+		});
+
+
+});
+
+		</script>
+	</head>
+	<body>
+<script src="js/highstock.js"></script>
+
+
+<div id="container" style="height: 500px; min-width: 500px"></div>
+	</body>
+</html>

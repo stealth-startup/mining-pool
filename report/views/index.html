@@ -1,18 +1,42 @@
-<html>
-  <head>
-    <title>Status</title>
-  </head>
-  <body>
-    <p>Total Hash Rate:{{total_ghs}}</p>
-    <table>
-      <tr><th align='left'>URL</th><th align='left'>Hash Rate</th><th align='left'>Workers</th></tr>
-      {{#info}}
-      <tr>
-	<td>{{url}}</td>
-	<td>{{hashrate}}</td>
-	<td>{{workers}}</td>
-      </tr>
-      {{/info}}
-    </table>
-  </body>
-</html>
+<!-- <p>Total Hash Rate:{{total_ghs}}</p> -->
+<!-- <table> -->
+<!--   <tr><th align='left'>URL</th><th align='left'>Hash Rate</th><th align='left'>Workers</th></tr> -->
+<!--   {{#info}} -->
+<!--   <tr> -->
+<!--     <td>{{url}}</td> -->
+<!--     <td>{{hashrate}}</td> -->
+<!--     <td>{{workers}}</td> -->
+<!--   </tr> -->
+<!--   {{/info}} -->
+<!-- </table> -->
+
+
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script>
+  $(function() {
+  $('#container').highcharts('StockChart', {
+  
+
+  rangeSelector : {
+  selected : 1
+  },
+
+  title : {
+  text : 'Hash Rate'
+  },
+  
+  series : [{
+  name : 'ASICMiner',
+  data : {{series}}  ,
+  tooltip: {
+  valueDecimals: 2
+  }
+  }]
+  });
+  });
+</script>
+
+<script type="text/javascript" src="js/highstock.js"></script>
+<div id="container" style="height: 500px; min-width: 500px"></div>
+

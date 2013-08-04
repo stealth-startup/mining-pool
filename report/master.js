@@ -29,8 +29,11 @@ app.configure(function () {
 //app.engine('html',cons.mustache);
 app.set('view engine','html');
 app.set('views', __dirname + '/views');
-app.enable('view cache');
+// app.enable('view cache');
 app.engine('html',require('hogan-express'));
+app.set('layout', 'layout');
+//app.set('partials', head: "head") # partails using by default on all pages
+
 
 app.get('/',function(req,res){ 
   // total_ghs = 0;
@@ -44,7 +47,8 @@ app.get('/',function(req,res){
   }
   pools.total_ghs=total_ghs.toFixed(2);
   console.log(total_ghs);
-  res.render('index',pools);
+  var series={'text':'hello','series':'[[1375583322832,100],[1375583332832,104],[1375583334832,102],[1375583622832,106]]'};
+  res.render('index',series);
 });
 
 app.get('/command/:name', function(req, res) {
