@@ -29,7 +29,7 @@ app.configure(function () {
 //app.engine('html',cons.mustache);
 app.set('view engine','html');
 app.set('views', __dirname + '/views');
-// app.enable('view cache');
+app.enable('view cache');
 app.engine('html',require('hogan-express'));
 app.set('layout', 'layout');
 //app.set('partials', head: "head") # partails using by default on all pages
@@ -54,7 +54,7 @@ app.get('/',function(req,res){
 		 .limit(60480)
 		 .toArray(function(err,arr){
 			    var series = arr.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
-			    res.render('index',{'series':JSON.stringify(series)});
+			    res.render('index',{'rate':(total_ghs/1000).toFixed(4),'series':JSON.stringify(series)});
 			  });
 	     });
 });
