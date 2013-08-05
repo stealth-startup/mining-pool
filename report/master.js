@@ -1,11 +1,12 @@
 var argv = require('optimist')
-    .usage('Usage: $0 -p [port]')
-    .default({'p':80})
-    .argv;
+      .usage('Usage: $0 -p [port]')
+      .default({'p':80})
+      .argv;
 
 var express = require('express');
 var cons = require('consolidate');
 var faye = require('faye');
+var async = require('async');
 
 var bayeux = new faye.NodeAdapter({
   mount:    '/faye',
@@ -25,8 +26,6 @@ app.configure(function () {
   app.use(express.static(__dirname + '/public'));
 });
 
-
-//app.engine('html',cons.mustache);
 app.set('view engine','html');
 app.set('views', __dirname + '/views');
 app.enable('view cache');
@@ -36,61 +35,76 @@ app.set('layout', 'layout');
 
 
 app.get('/',function(req,res){ 
-  // total_ghs = 0;
-  // for(var url in pools) {
-  //   total_ghs += parseFloat(pools[url].hashrate);
-  // }
-  // var body = "Total Hash Rate:"+total_ghs+'</br>';
   var total_ghs = 0;
   for(var i=0;i<pools.info.length;i++){
     total_ghs+=parseFloat(pools.info[i].hashrate);
   }
   pools.total_ghs=total_ghs.toFixed(2);
   console.log(total_ghs);
+
   connection(function(db){
-	       db.collection('hashrate')
-		 .find()
-		 .sort( { '_id' : -1 } )
-		 .limit(60480)
-		 .toArray(function(err,arr){
-			    var series = arr.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
-			    res.render('index',{'rate':(total_ghs/1000).toFixed(4),'series':JSON.stringify(series)});
-			  });
-	     });
+    async.parallel({
+      series:function(callback){
+        db.collection('hashrate')
+          .find()
+          .sort( { '_id' : -1 } )
+          .limit(60480)
+          .toArray(function(err,arr){callback(null,arr);});
+      },
+      blocks:function(callback){
+        db.collection('blocks')
+          .find({'time':{$gte:1375690741000}})
+          .toArray(function(err,arr){callback(null,arr);});
+      }
+    },
+                   function(err,results){
+                     var series = results.series.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
+                     var blocks = results.blocks.map(function(item){return [item.time,item.hash];});
+                     res.render('index',{'rate':(total_ghs/1000).toFixed(4),'series':JSON.stringify(series),'blocks':JSON.stringify(blocks)});                                        
+                     
+                   });
+    
+  });
 });
 
-app.get('/command/:name', function(req, res) {
-  bayeux.getClient().publish('/command', {text: req.params.name});
-  res.send(200);
-});
+// app.get('/command/:name', function(req, res) {
+//   bayeux.getClient().publish('/command', {text: req.params.name});
+//   res.send(200);
+// });
 
 var connection = require('./connection');
 
+var count = 0;
+
 bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
-    pools.info = merge(pools.info,data);
-    var total_ghs = 0;
-    var blocks = [];
-    for(var i=0;i<pools.info.length;i++){
-      total_ghs+=parseFloat(pools.info[i].hashrate);
-      blocks = merge(blocks,pools.info[i].blocks);
-    }
-    pools.total_ghs=total_ghs.toFixed(2);
-    console.log("got message");
-    console.log(data);
-    console.log(blocks);
-    connection(function(db) {
-      db.collection('hashrate',function(err,col){
-	col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
-      });
-      db.collection('blocks',function(err,col){
-	blocks.map(function(block){
-	  col.update({'hash':block.hash},{'hash':block.hash,'time':+ new Date(block.timestamp)},{upsert:true},function(err,res){console.log(err);});
-	});
-      });
-    });
-    //    console.log(data);
-  };
+    count++;
+    if(count>6) {
+      pools.info = merge(pools.info,data);
+      var total_ghs = 0;
+      var blocks = [];
+      for(var i=0;i<pools.info.length;i++){
+        total_ghs+=parseFloat(pools.info[i].hashrate);
+        blocks = merge(blocks,pools.info[i].blocks);
+      }
+      pools.total_ghs=total_ghs.toFixed(2);
+      console.log("got message");
+      console.log(data);
+      console.log(blocks);
+      if(pools.info.length>8) {
+        connection(function(db) {
+          db.collection('hashrate',function(err,col){
+            col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+          });
+          db.collection('blocks',function(err,col){
+            blocks.map(function(block){
+              col.update({'hash':block.hash},{'hash':block.hash,'time':+ new Date(block.timestamp)},{upsert:true},function(err,res){console.log(err);});
+            });
+          });
+        });
+      }
+    };
+  }
 });
 
 var server = app.listen(argv.p);

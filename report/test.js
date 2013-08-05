@@ -1,16 +1,9 @@
 var mongoDbConnection = require('./connection');
 
-function f(){
 mongoDbConnection(function(databaseConnection) {
-    databaseConnection.collection('solo', function(error, collection) {
-	collection.insert({'hashrate':14000,'date':+new Date()},{w:1},function(){});
-    });
+    databaseConnection.collection('blocks')
+                      .find({'time':{$gte:1375690741000}})
+                      .toArray(function(err,arr){console.log(arr);});
 });
-    return;
-};
 
-
-f();
-
-console.log('asdfaf');
 
