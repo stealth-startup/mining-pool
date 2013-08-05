@@ -77,12 +77,15 @@ bayeux.bind('publish', function(clientId, channel, data) {
     }
     pools.total_ghs=total_ghs.toFixed(2);
     console.log("got message");
+    console.log(data);
     console.log(blocks);
     connection(function(db) {
       db.collection('hashrate',function(err,col){
 	col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+      });
+      db.collection('blocks',function(err,col){
 	blocks.map(function(block){
-	  col.update({'hash':block.hash},{'hash':block.hash,'time':+ new Date(block.timestamp)},{upsert:true});
+	  col.update({'hash':block.hash},{'hash':block.hash,'time':+ new Date(block.timestamp)},{upsert:true},function(err,res){console.log(err);});
 	});
       });
     });
