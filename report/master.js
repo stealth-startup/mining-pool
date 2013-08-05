@@ -70,16 +70,22 @@ bayeux.bind('publish', function(clientId, channel, data) {
   if(channel=='/stat') {
     pools.info = merge(pools.info,data);
     var total_ghs = 0;
+    var blocks = [];
     for(var i=0;i<pools.info.length;i++){
       total_ghs+=parseFloat(pools.info[i].hashrate);
+      blocks = merge(blocks,pools.info[i].blocks);
     }
     pools.total_ghs=total_ghs.toFixed(2);
     console.log("got message");
+    console.log(blocks);
     connection(function(db) {
-		 db.collection('hashrate',function(err,col){
-				 col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
-			       });
-	       });
+      db.collection('hashrate',function(err,col){
+	col.insert({'rate':pools.total_ghs,'time':+new Date()},{w:1},function(){});
+	blocks.map(function(block){
+	  col.update({'hash':block.hash},{'hash':block.hash,'time':+ new Date(block.timestamp)},{upsert:true});
+	});
+      });
+    });
     //    console.log(data);
   };
 });
