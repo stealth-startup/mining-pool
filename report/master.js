@@ -88,18 +88,15 @@ var server = app.listen(argv.p);
 
 var serverAuth = {
   incoming: function(message, callback) {
-    // Let non-subscribe messages through
-    if (message.channel !== '/meta/subscribe')
-      return callback(message);
-
     // Get subscribed channel and auth token
     var subscription = message.subscription,
         msgToken     = message.ext && message.ext.authToken;
 
-      if (msgToken!=='PinkFloydIsTheWorst')
-        message.error = 'Invalid subscription auth token';
-      // Call the server back now we're done
-      callback(message);
+    console.log(message.ext);
+    if (msgToken!=='PinkFloydIsTheWorst')
+      message.error = 'Invalid subscription auth token';
+    // Call the server back now we're done
+    callback(message);
   }
 };
 
