@@ -95,7 +95,7 @@ $(function() {
 	    color : 'green',
 	    events : {
 		click: function(e){
-		    var x = e.x;
+    		    var x = e.point.x;
 		    var index=(arrFind(blocks,function(item){return item.x>x;}));
 		    var hash = blocks[index].info.hash;
 		    window.open('https://blockchain.info/block-index/'+hash,'_blank');
@@ -117,7 +117,21 @@ $(function() {
 
 </script>
 
+<script>
+$.ajax({
+  url: "http://blockchain.info/q/getdifficulty",
+  cache: false
+}).done(function( html ) {
+   var diff = parseFloat(html);
+   var p = 20116567.6116; <!-- 10^12*t/(2^32) -->
+   var estimate = parseFloat({{rate}})*p/diff;
+   $('#est').html("Estimated Blocks: "+estimate.toFixed(1)+" Per day");
+});
+
+</script>
+
 
 <div id="hashrate" style="height: 500px; min-width: 500px"></div>
 
 
+<div id="est"></div>
