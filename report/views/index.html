@@ -91,11 +91,11 @@ $(function() {
 	    name : 'Block',
 	    type : 'column',
 	    data : blocks,
-	    pointWidth:10,
+	    pointWidth:6,
 	    color : 'green',
 	    events : {
 		click: function(e){
-    		    var x = e.point.x;
+		    var x = e.point.x;
 		    var index=(arrFind(blocks,function(item){return item.x>x;}));
 		    var hash = blocks[index].info.hash;
 		    window.open('https://blockchain.info/block-index/'+hash,'_blank');
