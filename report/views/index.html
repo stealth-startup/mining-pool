@@ -65,6 +65,7 @@ $(function() {
 
 	    formatter: function() {
             	var s = '<b>'+ Highcharts.dateFormat('%b %d, %H:%M:%S', this.x) +'</b><br>';
+                s+=this.points[0].y.toFixed(2)+'TH/s<br>'
  		if(this.points[1]) {
 		    var x = this.points[1].x;
 		    var index=(arrFind(blocks,function(item){return item.x>x;}));
@@ -90,7 +91,7 @@ $(function() {
 	    name : 'Block',
 	    type : 'column',
 	    data : blocks,
-	    pointWidth:5,
+	    pointWidth:10,
 	    color : 'green',
 	    events : {
 		click: function(e){

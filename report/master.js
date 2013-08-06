@@ -46,7 +46,7 @@ app.get('/',function(req,res){
     async.parallel({
       series:function(callback){
         db.collection('hashrate')
-          .find()
+          .find({'time':{$gte:1375690741000}})
           .sort( { '_id' : -1 } )
           .limit(60480)
           .toArray(function(err,arr){callback(null,arr);});
