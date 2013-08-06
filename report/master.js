@@ -59,7 +59,7 @@ app.get('/',function(req,res){
     },
                    function(err,results){
                      var series = results.series.map(function(item){return [item.time,parseFloat(item.rate)/1000];}).reverse();
-                     var blocks = results.blocks.map(function(item){return [item.time,item.hash];});
+                     var blocks = results.blocks.map(function(item){return {'x':item.time,'info':{'hash':item.hash},'y':1};});
                      res.render('index',{'rate':(total_ghs/1000).toFixed(4),'series':JSON.stringify(series),'blocks':JSON.stringify(blocks)});                                        
                      
                    });

@@ -11,66 +11,112 @@
 <!-- </table> -->
 <script type="text/javascript" src="js/highstock.js"></script>
 <script>
-
 Highcharts.setOptions({
-  global: {
-  useUTC: false
-  }
+    global: {
+	useUTC: false
+    }
 });
 
-  $(function() {
-  $('#hashrate').highcharts('StockChart', {
-  
+var series = {{series}};
+var blocks = {{&blocks}};
 
-  rangeSelector : {
-buttons: [{
-type: 'hour',
-count: 6,
-text: '6h'
-},{
-type: 'hour',
-count: 12,
-text: '12h'
-}, {
-type: 'day',
-count: 1,
-text: '1d'
-}, {
-type: 'week',
-count: 1,
-text: '1w'
-}, {
-type: 'month',
-count: 1,
-text: '1m'
-}, {
-type: 'all',
-text: 'All'
-}],
+</script>
 
-  selected : 1
-  },
-  
+<script>
+function arrFind(arr,f) {
+    var index=-1;
+    for(var i=0;i<arr.length;i++) {
+	if(f(arr[i])) {index=i;break;}
+    }
+    return index;
+}
 
+$(function() {
+    $('#hashrate').highcharts('StockChart', {
+	rangeSelector : {
+	    buttons: [{
+		type: 'hour',
+		count: 6,
+		text: '6h'
+	    },{
+		type: 'hour',
+		count: 12,
+		text: '12h'
+	    }, {
+		type: 'day',
+		count: 1,
+		text: '1d'
+	    }, {
+		type: 'week',
+		count: 1,
+		text: '1w'
+	    }, {
+		type: 'month',
+		count: 1,
+		text: '1m'
+	    }, {
+		type: 'all',
+		text: 'All'
+	    }],
+	    selected : 1
+	},
+	
+	tooltip : { 
 
-  title : {
-  text : 'Hash Rate:{{rate}}TH/s'
-  },
-  
-  series : [{
-  name : 'ASICMiner',
-  data : {{series}}  ,
-  tooltip: {
-  valueDecimals: 2,
-  valueSuffix: 'TH/s'
-  }
-  }]
-  });
-  });
+	    formatter: function() {
+            	var s = '<b>'+ Highcharts.dateFormat('%b %d, %H:%M:%S', this.x) +'</b><br>';
+ 		if(this.points[1]) {
+		    var x = this.points[1].x;
+		    var index=(arrFind(blocks,function(item){return item.x>x;}));
+		    s+= blocks[index].info.hash;
+		}
+	    	return s;
+	    }
+	} ,
+
+	title : {
+	    text : 'Hash Rate:{{rate}}TH/s'
+	},
+	
+	series : [{
+	    name : 'Hash Rate',
+	    data : series,
+	    tooltip: {
+		valueDecimals: 2,
+		valueSuffix: 'TH/s'
+	    },
+	    yAxis : 0
+	},{
+	    name : 'Block',
+	    type : 'column',
+	    data : blocks,
+	    pointWidth:5,
+	    color : 'green',
+	    events : {
+		click: function(e){
+		    var x = e.x;
+		    var index=(arrFind(blocks,function(item){return item.x>x;}));
+		    var hash = blocks[index].info.hash;
+		    window.open('https://blockchain.info/block-index/'+hash,'_blank');
+		}
+	    },
+	    yAxis : 1
+	}],
+
+	yAxis: [ {},
+		 {min:0,
+                  max:10,
+                  allowDecimals:false,
+                  gridLineWidth:0,
+                  labels:{enabled:false}}	
+	       ]
+    });
+    
+});
+
 </script>
 
 
 <div id="hashrate" style="height: 500px; min-width: 500px"></div>
 
-<div id="blocks" style="height: 500px; min-width: 500px"></div>
 
