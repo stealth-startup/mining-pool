@@ -1,1 +1,20 @@
-{{blocks}}
+<table id="block-table" class="table table-striped">  
+  <thead>  
+    <tr>  
+      <th>Block Hash</th>  
+      <th>Mined At</th>  
+    </tr>  
+  </thead>  
+  <tbody>  
+    {{#blocks}}
+    <tr>  
+      <td><a href="https://blockchain.info/block-index/{{hash}}">{{hash}}</a></td>
+      <td>{{time}}</td>
+    </tr>  
+    {{/blocks}}
+  </tbody>  
+</table>  
+
+<script>
+jQuery(document).ready(function(){$("#block-table td:nth-child(2)").each(function(){$(this).text(new Date(parseFloat($(this)[0].innerText)))})}
+</script>
