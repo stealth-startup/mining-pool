@@ -67,14 +67,14 @@ formatter: function() {
   var s = '<b>'+ Highcharts.dateFormat('%b %d, %H:%M:%S', this.x) +'</b><br>';
   if(this.points[1]) {
     var x = this.points[1].x;
-    var index=(arrFind(blocks,function(item){return item.x>x;}));
+    var index=(arrFind(blocks,function(item){return item.x>=x;}));
     s+= blocks[index].info.hash;
     return s;
   } else {
     var point = this.points[0];
-    if(point.info) {
+    if(point.y<=3) {
       x = point.x;
-      index=(arrFind(blocks,function(item){return item.x>x;}));
+      index=(arrFind(blocks,function(item){return item.x>=x;}));
       s+= blocks[index].info.hash;
       return s;
     } else {
@@ -110,7 +110,7 @@ formatter: function() {
 	    events : {
 		click: function(e){
 		    var x = e.point.x;
-		    var index=(arrFind(blocks,function(item){return item.x>x;}));
+		    var index=(arrFind(blocks,function(item){return item.x>=x;}));
 		    var hash = blocks[index].info.hash;
 		    window.open('https://blockchain.info/block-index/'+hash,'_blank');
 		}
