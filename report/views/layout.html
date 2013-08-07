@@ -16,7 +16,6 @@
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
   </head>
-
   <body>
 
     <!-- Wrap all page content here -->
@@ -32,12 +31,19 @@
           </button>
           <a class="navbar-brand" href="#">ASICMiner</a>
           <div class="nav-collapse collapse">
-            <ul class="nav navbar-nav">
-              <li class="active"><a href="#">Hash Rate</a></li>
-              <li><a href="#block">Block Charts</a></li>
-              <li><a href="#stats">Statistics</a></li>
+            <ul id="menu" class="nav navbar-nav">
+              <li id="menu-hashrate"><a href="/">Hash Rate</a></li>
+              <li id="menu-blocks"><a href="/blocks">Block Charts</a></li>
+              <li id="menu-stats"><a href="/stats">Statistics</a></li>
             </ul>
           </div><!--/.nav-collapse -->
+	  <script>
+	    var path = window.location.pathname.slice(1);
+	    if(path=="") $("#menu-hashrate").addClass("active");
+	    if(path=="blocks") $("#menu-blocks").addClass("active");
+	    if(path=="stats") $("#menu-stats").addClass("active");
+	  </script>
+
         </div>
       </div>
 

@@ -63,16 +63,26 @@ $(function() {
 	
 	tooltip : { 
 
-	    formatter: function() {
-            	var s = '<b>'+ Highcharts.dateFormat('%b %d, %H:%M:%S', this.x) +'</b><br>';
-                s+=this.points[0].y.toFixed(2)+'TH/s<br>'
- 		if(this.points[1]) {
-		    var x = this.points[1].x;
-		    var index=(arrFind(blocks,function(item){return item.x>x;}));
-		    s+= blocks[index].info.hash;
-		}
-	    	return s;
-	    }
+formatter: function() {
+  var s = '<b>'+ Highcharts.dateFormat('%b %d, %H:%M:%S', this.x) +'</b><br>';
+  if(this.points[1]) {
+    var x = this.points[1].x;
+    var index=(arrFind(blocks,function(item){return item.x>x;}));
+    s+= blocks[index].info.hash;
+    return s;
+  } else {
+    var point = this.points[0];
+    if(point.info) {
+      x = point.x;
+      index=(arrFind(blocks,function(item){return item.x>x;}));
+      s+= blocks[index].info.hash;
+      return s;
+    } else {
+      s+= point.y.toFixed(2)+"TH/s";
+      return s;
+    }
+  }
+}
 	} ,
 
 	title : {

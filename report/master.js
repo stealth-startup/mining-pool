@@ -67,6 +67,17 @@ app.get('/',function(req,res){
   });
 });
 
+app.get('/blocks',function(req,res){
+    connection(function(db){
+        db.collection('blocks')
+	    .find({'time':{$gte:1375690741000}})
+	    .toArray(function(err,arr){
+		var blocks = arr.map(function(item){return {'hash':item.hash,'time':item.time};});
+		res.render('blocks',{'blocks':blocks});
+	    });
+    });
+});
+
 // app.get('/command/:name', function(req, res) {
 //   bayeux.getClient().publish('/command', {text: req.params.name});
 //   res.send(200);
