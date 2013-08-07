@@ -53,7 +53,7 @@ app.get('/',function(req,res){
       },
       blocks:function(callback){
         db.collection('blocks')
-          .find({'time':{$gte:1375690741000}})
+          .find({'time':{$gte:+new Date()-7*24*60*60*1000}})
           .toArray(function(err,arr){callback(null,arr);});
       }
     },
