@@ -71,7 +71,7 @@ var curr_date = d.getDate();
 var curr_month = d.getMonth();
 var curr_year = d.getFullYear();
 var curr_hour = ("0"+d.getHours()).slice(-2);
-var curr_min = (d.getMinutes()+"0").slice(0,2);
+var curr_min = ("0"+d.getMinutes()).slice(-2);
 return (m_names[curr_month] + "-" + curr_date + "-" + curr_year + " " + curr_hour + ":" + curr_min);
 }
 
