@@ -19,6 +19,8 @@
 <!-- </style> -->
 
 <style>
+th {text-align:center}
+
 /* 
     Document   : no-more-tables
     Created on : 28/02/2012, 11:01:54 AM
@@ -92,13 +94,13 @@
     <tbody>  
       {{#blocks}}
       {{#notfound}}
-      <tr>  
-        <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
-	<td data-title="size" align="right"></td>
-	<td data-title="txs" align="right"></td>
-	<td data-title="fee" align="right"></td>
-        <td data-title="time">{{time}}</td>
-      </tr>  
+      <!-- <tr>   -->
+      <!--   <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td> -->
+      <!--   <td data-title="size" align="right"></td> -->
+      <!--   <td data-title="txs" align="right"></td> -->
+      <!--   <td data-title="fee" align="right"></td> -->
+      <!--   <td data-title="time">{{time}}</td> -->
+      <!-- </tr>   -->
       {{/notfound}}
       {{^notfound}}
       {{#orphaned}}
