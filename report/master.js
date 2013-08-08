@@ -73,7 +73,7 @@ app.get('/blocks',function(req,res){
 	    .find({'time':{$gte:1375690741000}})
             .sort({'time':-1})
 	    .toArray(function(err,arr){
-		var blocks = arr.map(function(item){return {'hash':item.hash,'time':item.time};});
+		var blocks = arr.map(function(item){return {'hash':item.hash,'time':item.time,'size':item.size,'fee':item.fee,'tx_count':item.tx_count,'orphaned':item.orphaned};});
 		res.render('blocks',{'blocks':blocks});
 	    });
     });

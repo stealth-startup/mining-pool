@@ -1,21 +1,58 @@
-<div class="panel">
+<div class="panel" style="width:90%">
   <div class="panel-heading">
     <h3 class="panel-title">Blocks Mined Within 7 days</h3>
   </div>
+  
+<style>
+th {text-align:center}
+th.hash{
+  width: 25%
+}
+th.size{
+  width: 15%
+}
+th.txs{
+  width: 10%
+}
+th.fee{
+  width: 15%
+}
+th.date{
+  width: 30%
+}
 
-  <table id="block-table" class="table table-striped" style="font-family:consolas, 'courier new';font-size:15px;">  
+</style>
+
+  <table id="block-table" class="table table-striped" style="font-family:consolas, 'courier new';font-size:13px;">  
      <thead>  
       <tr>  
-        <th>Block Hash</th>  
-        <th>Mined At</th>  
+        <th class="hash">Block Hash</th>  
+	<th class="size">Size</th>
+	<th class="txs">Txs</th>
+	<th class="fee">Fee</th>
+        <th class="date">Mined At</th>  
       </tr>  
     </thead>  
     <tbody>  
       {{#blocks}}
+      {{#orphaned}}
       <tr>  
-        <td><a href="https://blockchain.info/block-index/{{hash}}">{{hash}}</a></td>
+        <td><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
+	<td align="right">{{size}}</td>
+	<td align="right">{{tx_count}}</td>
+	<td align="right">{{fee}}</td>
         <td>{{time}}</td>
       </tr>  
+      {{/orphaned}}
+      {{^orphaned}}
+      <tr>  
+        <td><a href="https://blockchain.info/block-index/{{hash}}">{{hash}}</a></td>
+	<td align="right">{{size}}</td>
+	<td align="right">{{tx_count}}</td>
+	<td align="right">{{fee}}</td>
+        <td>{{time}}</td>
+      </tr>  
+      {{/orphaned}}
       {{/blocks}}
     </tbody>  
   </table>  
@@ -24,5 +61,22 @@
 
 
 <script>
-  $(document).ready(function(){$("#block-table td:nth-child(2)").each(function(){$(this).text(new Date(parseFloat($(this)[0].innerText)))})})
+function formatDate(t) {
+var m_names = new Array("Jan", "Feb", "Mar", 
+"Apr", "May", "Jun", "Jul", "Aug", "Sep", 
+"Oct", "Nov", "Dec");
+
+var d = new Date(t);
+var curr_date = d.getDate();
+var curr_month = d.getMonth();
+var curr_year = d.getFullYear();
+var curr_hour = ("0"+d.getHours()).slice(-2);
+var curr_min = (d.getMinutes()+"0").slice(0,2);
+return (m_names[curr_month] + "-" + curr_date + "-" + curr_year + " " + curr_hour + ":" + curr_min);
+}
+
+  $(document).ready(function(){
+         $("#block-table td:nth-child(5)").each(function(){$(this).text(formatDate(parseFloat($(this)[0].innerText)))});
+         $("#block-table td:nth-child(2)").each(function(){if($(this)[0].innerText){$(this).text((parseFloat($(this)[0].innerText))/1000+" K")}});
+})
 </script>
