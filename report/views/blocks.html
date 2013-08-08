@@ -91,6 +91,16 @@
     </thead>  
     <tbody>  
       {{#blocks}}
+      {{#notfound}}
+      <tr>  
+        <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
+	<td data-title="size" align="right"></td>
+	<td data-title="txs" align="right"></td>
+	<td data-title="fee" align="right"></td>
+        <td data-title="time">{{time}}</td>
+      </tr>  
+      {{/notfound}}
+      {{^notfound}}
       {{#orphaned}}
       <tr>  
         <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
@@ -109,6 +119,7 @@
         <td data-title="time">{{time}}</td>
       </tr>  
       {{/orphaned}}
+      {{/notfound}}
       {{/blocks}}
     </tbody>  
   </table>  
