@@ -1,26 +1,82 @@
-<div class="panel" style="width:90%">
-  <div class="panel-heading">
-    <h3 class="panel-title">Blocks Mined Within 7 days</h3>
-  </div>
-  
-<style>
-th {text-align:center}
-th.hash{
-  width: 35%
-}
-th.size{
-  width: 15%
-}
-th.txs{
-  width: 10%
-}
-th.fee{
-  width: 15%
-}
-th.date{
-  width: 25%
-}
+<!-- <style> -->
+<!-- th {text-align:center} -->
+<!-- th.hash{ -->
+<!--   width: 35% -->
+<!-- } -->
+<!-- th.size{ -->
+<!--   width: 15% -->
+<!-- } -->
+<!-- th.txs{ -->
+<!--   width: 10% -->
+<!-- } -->
+<!-- th.fee{ -->
+<!--   width: 15% -->
+<!-- } -->
+<!-- th.date{ -->
+<!--   width: 25% -->
+<!-- } -->
 
+<!-- </style> -->
+
+<style>
+/* 
+    Document   : no-more-tables
+    Created on : 28/02/2012, 11:01:54 AM
+    Author     : Simon Elvery
+    Description:
+        Demonstration of the responsive tables method described at by Chris Coyier
+		at http://css-tricks.com/responsive-data-tables/
+*/
+
+@media only screen and (max-width: 800px) {
+	
+	/* Force table to not be like tables anymore */
+	#no-more-tables table, 
+	#no-more-tables thead, 
+	#no-more-tables tbody, 
+	#no-more-tables th, 
+	#no-more-tables td, 
+	#no-more-tables tr { 
+		display: block; 
+	}
+
+	/* Hide table headers (but not display: none;, for accessibility) */
+	#no-more-tables thead tr { 
+		position: absolute;
+		top: -9999px;
+		left: -9999px;
+	}
+
+	#no-more-tables tr { border: 1px solid #ccc; }
+
+	#no-more-tables td { 
+		/* Behave  like a "row" */
+		border: none;
+		border-bottom: 1px solid #eee; 
+		position: relative;
+		padding-left: 50%; 
+		white-space: normal;
+		text-align:left;
+	}
+
+	#no-more-tables td:before { 
+		/* Now like a table header */
+		position: absolute;
+		/* Top/left values mimic padding */
+		top: 6px;
+		left: 6px;
+		width: 45%; 
+		padding-right: 10px; 
+		white-space: nowrap;
+		text-align:left;
+		font-weight: bold;
+	}
+
+	/*
+	Label the data
+	*/
+	#no-more-tables td:before { content: attr(data-title); }
+}					
 </style>
 
   <table id="block-table" class="table table-striped" style="font-family:consolas, 'courier new';font-size:14px;">  
@@ -37,27 +93,27 @@ th.date{
       {{#blocks}}
       {{#orphaned}}
       <tr>  
-        <td><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
-	<td align="right">{{size}}</td>
-	<td align="right">{{tx_count}}</td>
-	<td align="right">{{fee}}</td>
-        <td>{{time}}</td>
+        <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}" style="color:red">{{hash}}</a></td>
+	<td data-title="size" align="right">{{size}}</td>
+	<td data-title="txs" align="right">{{tx_count}}</td>
+	<td data-title="fee" align="right">{{fee}}</td>
+        <td data-title="time">{{time}}</td>
       </tr>  
       {{/orphaned}}
       {{^orphaned}}
       <tr>  
-        <td><a href="https://blockchain.info/block-index/{{hash}}">{{hash}}</a></td>
-	<td align="right">{{size}}</td>
-	<td align="right">{{tx_count}}</td>
-	<td align="right">{{fee}}</td>
-        <td>{{time}}</td>
+        <td data-title="blockhash"><a href="https://blockchain.info/block-index/{{hash}}">{{hash}}</a></td>
+	<td data-title="size" align="right">{{size}}</td>
+	<td data-title="txs" align="right">{{tx_count}}</td>
+	<td data-title="fee" align="right">{{fee}}</td>
+        <td data-title="time">{{time}}</td>
       </tr>  
       {{/orphaned}}
       {{/blocks}}
     </tbody>  
   </table>  
 
-</div>
+
 
 
 <script>
