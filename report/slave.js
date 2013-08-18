@@ -42,7 +42,7 @@ function send_msg() {
     daemon.refresh(function(stat){callback(null,stat);});
   },function(error,results){
     if(error) {
-      console.log(error);return;
+      console.log(error);process.exit(1);
     };
     var msg = results.map(function(res){
       var info =  { url:res.url, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
