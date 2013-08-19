@@ -1,0 +1,83 @@
+<style>
+  th {text-align:center}
+
+  /* 
+  Document   : no-more-tables
+  Created on : 28/02/2012, 11:01:54 AM
+  Author     : Simon Elvery
+  Description:
+  Demonstration of the responsive tables method described at by Chris Coyier
+  at http://css-tricks.com/responsive-data-tables/
+  */
+
+  @media only screen and (max-width: 800px) {
+  
+  /* Force table to not be like tables anymore */
+  #no-more-tables table, 
+  #no-more-tables thead, 
+  #no-more-tables tbody, 
+  #no-more-tables th, 
+  #no-more-tables td, 
+  #no-more-tables tr { 
+  display: block; 
+  }
+
+  /* Hide table headers (but not display: none;, for accessibility) */
+  #no-more-tables thead tr { 
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  }
+
+  #no-more-tables tr { border: 1px solid #ccc; }
+
+  #no-more-tables td { 
+  /* Behave  like a "row" */
+  border: none;
+  border-bottom: 1px solid #eee; 
+  position: relative;
+  padding-left: 50%; 
+  white-space: normal;
+  text-align:left;
+  }
+
+  #no-more-tables td:before { 
+  /* Now like a table header */
+  position: absolute;
+  /* Top/left values mimic padding */
+  top: 6px;
+  left: 6px;
+  width: 45%; 
+  padding-right: 10px; 
+  white-space: nowrap;
+  text-align:left;
+  font-weight: bold;
+  }
+
+  /*
+  Label the data
+  */
+  #no-more-tables td:before { content: attr(data-title); }
+  }					
+</style>
+
+<table id="server-table" class="table table-striped">  
+  <thead>  
+    <tr>  
+      <th class="url">Server</th>  
+      <th class="alive">Alive</th>
+      <th class="workers">Workers</th>
+      <th class="hashrate">Hash Rate</th>
+    </tr>  
+  </thead>  
+  <tbody>  
+    {{#servers}}
+    <tr>  
+      <td data-title="url"><a href="https://blockchain.info/block-index/{{hash}}">{{url}}</a></td>
+      <td data-title="alive" align="right">{{alive}}</td>
+      <td data-title="workers" align="right">{{workers}}</td>
+      <td data-title="hashrate" align="right">{{hashrate}}</td>
+    </tr>  
+    {{/servers}}
+  </tbody>  
+</table>  

@@ -1,6 +1,7 @@
 var argv = require('optimist')
     .usage('Usage: $0 -f [config_file]')
     .demand(['f'])
+    .default({'m':'r'})
     .argv;
 
 var config=require("./"+argv.f);
@@ -11,8 +12,16 @@ var daemons = urls.map(function(url){return new (require('./status'))(url[0],url
 
 
 var faye = require('faye');
-var client = new faye.Client('http://54.250.174.46/faye');
-// var client = new faye.Client('http://localhost/faye');
+
+var client;
+
+if(argv.m=='r') {
+  console.log("Remote Server");
+  client = new faye.Client('http://54.250.174.46/faye');
+} else {
+  console.log("Local Server");
+  client = new faye.Client('http://localhost/faye');
+}
 
 var clientAuth = {
   outgoing: function(message, callback) {

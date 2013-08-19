@@ -87,7 +87,7 @@ app.get('/blocks',function(req,res){
 });
 
 app.get('/servers',function(req,res){
-    res.render('servers');
+    res.render('servers',{'servers':pools.info});
 });
 
 // app.get('/command/:name', function(req, res) {
