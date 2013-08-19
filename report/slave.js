@@ -12,7 +12,7 @@ var daemons = urls.map(function(url){return new (require('./status'))(url[0],url
 
 var faye = require('faye');
 var client = new faye.Client('http://54.250.174.46/faye');
-// var client = new faye.Client('http://localhost:8123/faye');
+// var client = new faye.Client('http://localhost/faye');
 
 var clientAuth = {
   outgoing: function(message, callback) {
@@ -45,12 +45,12 @@ function send_msg() {
       console.log(error);process.exit(1);
     };
     var msg = results.map(function(res){
-      var info =  { url:res.url, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
+      var info =  { url:res.url, alive:res.alive, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
       return info;
     });
     client.publish('/stat',msg);
     count++;
-    console.log(count);
+    console.log(count+"  "+new Date());
     console.log("sent msg:"+JSON.stringify(msg));
   });
 };

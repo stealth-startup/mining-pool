@@ -86,6 +86,10 @@ app.get('/blocks',function(req,res){
     });
 });
 
+app.get('/servers',function(req,res){
+    res.render('servers');
+});
+
 // app.get('/command/:name', function(req, res) {
 //   bayeux.getClient().publish('/command', {text: req.params.name});
 //   res.send(200);
