@@ -136,7 +136,7 @@ var m_names = new Array("Jan", "Feb", "Mar",
 "Oct", "Nov", "Dec");
 
 var d = new Date(t);
-var curr_date = d.getDate();
+var curr_date = ("0"+d.getDate()).slice(-2);
 var curr_month = d.getMonth();
 var curr_year = d.getFullYear();
 var curr_hour = ("0"+d.getHours()).slice(-2);
