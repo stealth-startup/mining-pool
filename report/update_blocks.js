@@ -5,7 +5,7 @@ var connection = require('./connection');
 
 exports.update_all = function () {
   connection(function(db) {
-    db.collection('blocks').find()
+    db.collection('blocks').find({"size":{$exists:false}})
       .toArray(function(err,blocks){
         blocks.forEach(function(block){
 	  blockchain.getblock(block.hash,function(res) {
