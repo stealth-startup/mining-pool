@@ -1,0 +1,24 @@
+<div class="container">
+<table id="server-table" class="table table-striped">  
+  <thead>  
+    <tr>  
+      <th class="url">Server</th>  
+      <th class="alive">Alive</th>
+      <th class="workers">Workers</th>
+      <th class="hashrate">Hash Rate</th>
+      <th class="ratio">Ratio</th>
+    </tr>  
+  </thead>  
+  <tbody>  
+    {{#servers}}
+    <tr>  
+      <td data-title="url" style="color:{{color}};">{{url}}</td>
+      <td data-title="alive">{{alive}}</td>
+      <td data-title="workers">{{workers}}</td>
+      <td data-title="hashrate">{{hashrate}}</td>
+      <td data-title="ratio">{{ratio}}</td>
+    </tr>  
+    {{/servers}}
+  </tbody>  
+</table>  
+</div>

@@ -86,6 +86,46 @@ app.get('/blocks',function(req,res){
     });
 });
 
+var auth = express.basicAuth(function(user, pass, callback) {
+ var result = (user === 'asicminer' && pass === 'ngzhangdashabi');
+ callback(null /* error */, result);
+});
+
+var colors = 
+      [ '#208F00',
+
+	'#009322',
+
+	'#01976A',
+
+	'#01849C',
+
+	'#02419F',
+
+	'#0C02A4',
+
+	'#5803A7',
+
+	'#A603AC',
+
+	'#AF0465',
+
+	'#B40418' ];
+
+app.get('/servers',auth,function(req,res){
+  for(var i=0;i<pools.info.length;i++) {
+    var ratio=(pools.info[i].hashrate/pools.info[i].workers);
+    pools.info[i].ratio= ratio.toFixed(2);
+    var index = (100-Math.floor(parseFloat(ratio)*10));
+    if(index<0) index=0;
+    if(!pools.info[i].alive) index=9;
+    if(index>9) index=9;
+    console.log("ratio:%s,index:%s",ratio,index);
+    pools.info[i].color=colors[index];
+  };
+  res.render('servers',{'servers':pools.info});
+});
+
 // app.get('/command/:name', function(req, res) {
 //   bayeux.getClient().publish('/command', {text: req.params.name});
 //   res.send(200);
@@ -102,12 +142,12 @@ bayeux.bind('publish', function(clientId, channel, data) {
     if(channel=='/stat') {
 	count++;
 	if(count>6) {
-	    pools.info = merge(pools.info,data);
+	    pools.info = merge.merge(pools.info,data);
 	    var total_ghs = 0;
 	    var blocks = [];
 	    for(var i=0;i<pools.info.length;i++){
 		total_ghs+=parseFloat(pools.info[i].hashrate);
-		blocks = merge(blocks,pools.info[i].blocks);
+		blocks = merge.merge2(blocks,pools.info[i].blocks);
 	    }
 	    pools.total_ghs=total_ghs.toFixed(2);
 	    console.log("got message");

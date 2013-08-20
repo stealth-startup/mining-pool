@@ -1,6 +1,7 @@
 var argv = require('optimist')
     .usage('Usage: $0 -f [config_file]')
     .demand(['f'])
+    .default({'m':'r'})
     .argv;
 
 var config=require("./"+argv.f);
@@ -11,8 +12,16 @@ var daemons = urls.map(function(url){return new (require('./status'))(url[0],url
 
 
 var faye = require('faye');
-var client = new faye.Client('http://54.250.174.46/faye');
-// var client = new faye.Client('http://localhost:8123/faye');
+
+var client;
+
+if(argv.m=='r') {
+  console.log("Remote Server");
+  client = new faye.Client('http://54.250.174.46/faye');
+} else {
+  console.log("Local Server");
+  client = new faye.Client('http://localhost/faye');
+}
 
 var clientAuth = {
   outgoing: function(message, callback) {
@@ -42,20 +51,20 @@ function send_msg() {
     daemon.refresh(function(stat){callback(null,stat);});
   },function(error,results){
     if(error) {
-      console.log(error);return;
+      console.log(error);process.exit(1);
     };
     var msg = results.map(function(res){
-      var info =  { url:res.url, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
+      var info =  { url:res.url, alive:res.alive, hashrate:res.hashrate, blocks:res.blocks , workers:Object.keys(res.workers).length };
       return info;
     });
     client.publish('/stat',msg);
     count++;
-    console.log(count);
+    console.log(count+"  "+new Date());
     console.log("sent msg:"+JSON.stringify(msg));
   });
 };
 
 
-var interval = 20;
+var interval = 5;
 setInterval(send_msg,interval*1000);
 send_msg();
