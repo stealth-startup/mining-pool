@@ -65,6 +65,6 @@ function send_msg() {
 };
 
 
-var interval = 20;
+var interval = 5;
 setInterval(send_msg,interval*1000);
 send_msg();

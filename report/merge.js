@@ -13,4 +13,9 @@ function merge(arr1,arr2) {
   return arr2.concat(arr1).unique(function(item){return item.url;}); 
 }
 
-module.exports = merge;
+function merge2(arr1,arr2) {
+  return arr2.concat(arr1).unique(function(item){return item;}); 
+}
+
+exports.merge = merge;
+exports.merge2 = merge2;
