@@ -118,7 +118,7 @@ app.get('/servers',auth,function(req,res){
     pools.info[i].ratio= ratio.toFixed(2);
     var index = (100-Math.floor(parseFloat(ratio)*10));
     if(index<0) index=0;
-    if(!pools.info[i].alive) index=9;
+    if(!pools.info[i].alive || isNaN(index)) index=9;
     if(index>9) index=9;
     console.log("ratio:%s,index:%s",ratio,index);
     pools.info[i].color=colors[index];
