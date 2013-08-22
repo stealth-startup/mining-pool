@@ -105,6 +105,7 @@ function poolstatus(url) {
 	  "<tr><td align='right'><b>Shares:</b></td><td>{{shares}}</td></tr>" + 
       "<tr><td align='right'><b>Hashrate:</b></td><td>{{hashrate}} GH/s</td></tr>" +
       "<tr><td align='right'><b>Uptime:</b></td><td>{{uptime}}</td></tr>"  +   
+      "<tr><td align='right'><b>Height:</b></td><td>{{height}}</td></tr>"  +   
       "<tr><td align='right'><b>Workers:</b></td><td>{{workers.length}}</td></tr></table>";
     
     var html_data = Mustache.to_html(tpl_data, data);
@@ -136,26 +137,35 @@ function poolstatus(url) {
 	       	 var last_seen = to_dur_short(new Date() - cur_workers[ip].last_seen);
 		 var cur_worker = cur_workers[ip];
 		 cur_worker.last_seen = last_seen;
+		 
+		 var now = +new Date();
 	       	 if(self.workers[ip]) {
 		   var ghs;
 		   if(self.workers[ip].shares.length>=10) {
 		     self.workers[ip].shares = self.workers[ip].shares.slice(1);  
-		     ghs = ((cur_worker.shares-self.workers[ip].shares[0])/18*4.2).toFixed(2);
+		     ghs = ((cur_worker.shares-self.workers[ip].shares[0][0])/(now-self.workers[ip].shares[0][1])*4200).toFixed(2);
 		   } else {
 		     ghs = 0;		     
 		   }
-		   self.workers[ip].shares.push(cur_worker.shares);
+		   self.workers[ip].shares.push([cur_worker.shares,now]);
 		   self.workers[ip].ghs = ghs;
 		 } else {
 		   self.workers[ip] = cur_worker;
-		   self.workers[ip].shares = [self.workers[ip].shares];
+		   self.workers[ip].shares = [[self.workers[ip].shares,now]];
 		   self.workers[ip].ghs = 0;
 		 };
-		 self.workers[ip].last_shares = cur_worker.shares;
-		 self.workers[ip].last_seen = cur_worker.last_seen;
+
+		 self.workers[ip].last_seen = last_seen;
+		 if(cur_worker.shares[0]) {
+		   self.workers[ip].last_shares = cur_worker.shares[0];
+		 } else {
+		   self.workers[ip].last_shares = cur_worker.shares;
+		 }
+
 	       };
 	       	       
 	       self.blocks = data.blocks;
+	       result.height = data.height;
 	       result.workers = toIPSortedArray(self.workers);
 	       result.hashrate = result.workers.reduce(function(prev,cur){return prev+parseFloat(cur.ghs);},0).toFixed(2);
 	       result.url = self.url;
