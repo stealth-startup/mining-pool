@@ -109,14 +109,9 @@ function poolstatus(url) {
   },
 
   this.refresh = function(callback) {
-    $.ajax({
-             type: 'POST',
-             url: self.url,
-             crossDomain: true,
-             data: '{"jsonrpc":"2","id":"1","method":"stats","params":[]}',
-             dataType: 'json',
-             success: function(responseData, textStatus, jqXHR) {
-               var data = JSON.parse(responseData.result);
+    $.getJSON(self.url + "/stats/?callback=?", null, function(responseData) {
+	       console.log(responseData);
+               var data = JSON.parse(responseData);
                var result = {};
                result.uptime = to_dur(+new Date()-data.start);
                var cur_workers = JSON.parse(data.workers);
@@ -152,10 +147,6 @@ function poolstatus(url) {
                result.shares = data.shares;
                result.height = data.height;
                self.render_data(result);
-             },
-             error: function (responseData, textStatus, errorThrown) {
-               $("#data").text("Cannot connect to server");
-             }
-           });
+             });
   };
 };

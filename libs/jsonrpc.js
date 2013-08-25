@@ -316,7 +316,7 @@ Server.prototype.listen = function listen(port, host)
   Endpoint.trace('***', 'Server listening on http://' +
                  (host || '127.0.0.1') + ':' + port + '/');
   return server;
-}
+};
 
 Server.prototype.listenRaw = function listenRaw(port, host)
 {
@@ -354,18 +354,42 @@ Server.handleHttpError = function(req, res, code, message)
   res.end();
 };
 
+var url = require('url');
+
+var handleGet = function(req,res,self) {
+  var buffer = '';
+  var parsed = url.parse(req.url,true);
+  var method_name = parsed.pathname.slice(1).slice(0,-1);
+  var cb_name=parsed.query.callback;
+  console.log(method_name);
+  var conn = new HttpServerConnection(self, req, res);
+  self.handleCall({"method":method_name,"params":[]},conn,function(err,result){
+    var encoded = cb_name + '(' + JSON.stringify(result) + ')';
+    res.writeHead(200, {'Content-Type': 'text/javascript',
+                        'Content-Length': encoded.length});
+    res.write(encoded);
+    res.end();
+  });
+};
+
 /**
  * Handle HTTP POST request.
  */
 Server.prototype.handleHttp = function(req, res)
 {
   Endpoint.trace('<--', 'Accepted http request');
+  
+  if(req.method == 'GET') {
+    console.log('GET');
+    handleGet(req,res,this);
+    return;
+  }
 
   if (req.method !== 'POST') {
     Server.handleHttpError(req, res, 405, METHOD_NOT_ALLOWED);
     return;
   }
-
+  
   var buffer = '';
   var self = this;
 
@@ -386,7 +410,7 @@ Server.prototype.handleHttp = function(req, res)
   var handle = function (buf) {
       try {
     var decoded = JSON.parse(buf);
-      } catch(err) { var decoded = {} };
+      } catch(err) { var decoded = {}; };
       
     // Check for the required fields, and if they aren't there, then
     // dispatch to the handleHttpError function.
