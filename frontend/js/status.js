@@ -110,7 +110,7 @@ function poolstatus(url) {
 
   this.refresh = function(callback) {
     $.getJSON(self.url + "/stats/?callback=?", null, function(responseData) {
-	       console.log(responseData);
+//	       console.log(responseData);
                var data = JSON.parse(responseData);
                var result = {};
                result.uptime = to_dur(+new Date()-data.start);
