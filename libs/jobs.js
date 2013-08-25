@@ -235,7 +235,8 @@ Jobs.prototype = {
     var coinbase = this.merkle_to_coinbase[merkle];
 
     if(!coinbase) {
-      console.log("[%s]Staled:%d",new Date(),self.height);
+//      console.log("[%s]Staled:%d",new Date(),self.height);
+      return;
     };
 
     if(pow) {

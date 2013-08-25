@@ -359,14 +359,18 @@ var url = require('url');
 var handleGet = function(req,res,self) {
   var buffer = '';
   var parsed = url.parse(req.url,true);
-  var method_name = parsed.pathname.slice(1).slice(0,-1);
+  
+  var method_name = parsed.pathname.replace(/\//g, '');
+
   var cb_name=parsed.query.callback;
+
   var conn = new HttpServerConnection(self, req, res);
   self.handleCall({"method":method_name,"params":[]},conn,function(err,result){
     var encoded = cb_name + '(' + JSON.stringify(result) + ')';
     res.writeHead(200, {'Content-Type': 'text/javascript',
                         'Content-Length': encoded.length});
     res.write(encoded);
+
     res.end();
   });
 };
