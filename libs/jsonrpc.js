@@ -361,7 +361,6 @@ var handleGet = function(req,res,self) {
   var parsed = url.parse(req.url,true);
   var method_name = parsed.pathname.slice(1).slice(0,-1);
   var cb_name=parsed.query.callback;
-  console.log(method_name);
   var conn = new HttpServerConnection(self, req, res);
   self.handleCall({"method":method_name,"params":[]},conn,function(err,result){
     var encoded = cb_name + '(' + JSON.stringify(result) + ')';
@@ -380,7 +379,6 @@ Server.prototype.handleHttp = function(req, res)
   Endpoint.trace('<--', 'Accepted http request');
   
   if(req.method == 'GET') {
-    console.log('GET');
     handleGet(req,res,this);
     return;
   }
