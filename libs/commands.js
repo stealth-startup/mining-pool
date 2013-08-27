@@ -58,6 +58,7 @@ var commands = module.exports.commands = [
 'signrawtransaction',
 'stop',
 'submitblock',
+'checkblock',
 'validateaddress',
 'verifymessage'
 ];

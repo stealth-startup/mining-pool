@@ -1,0 +1,89 @@
+From 8bac1a9c2de7f9401a7aed357c67412c50330074 Mon Sep 17 00:00:00 2001
+From: naituida <dyzz@mail.ustc.edu.cn>
+Date: Tue, 27 Aug 2013 22:46:09 +0800
+Subject: [PATCH] checkblock
+
+---
+ src/bitcoinrpc.cpp |  1 +
+ src/bitcoinrpc.h   |  1 +
+ src/main.cpp       |  2 +-
+ src/rpcmining.cpp  | 29 +++++++++++++++++++++++++++++
+ 4 files changed, 32 insertions(+), 1 deletion(-)
+
+diff --git a/src/bitcoinrpc.cpp b/src/bitcoinrpc.cpp
+index d22809c..cfa9507 100644
+--- a/src/bitcoinrpc.cpp
++++ b/src/bitcoinrpc.cpp
+@@ -242,6 +242,7 @@ static const CRPCCommand vRPCCommands[] =
+     { "settxfee",               &settxfee,               false,     false },
+     { "getblocktemplate",       &getblocktemplate,       true,      false },
+     { "submitblock",            &submitblock,            false,     false },
++    { "checkblock",             &checkblock,             false,     false },
+     { "listsinceblock",         &listsinceblock,         false,     false },
+     { "dumpprivkey",            &dumpprivkey,            true,      false },
+     { "dumpwallet",             &dumpwallet,             true,      false },
+diff --git a/src/bitcoinrpc.h b/src/bitcoinrpc.h
+index 4d5599b..a0259ce 100644
+--- a/src/bitcoinrpc.h
++++ b/src/bitcoinrpc.h
+@@ -158,6 +158,7 @@ extern json_spirit::Value getmininginfo(const json_spirit::Array& params, bool f
+ extern json_spirit::Value getwork(const json_spirit::Array& params, bool fHelp);
+ extern json_spirit::Value getblocktemplate(const json_spirit::Array& params, bool fHelp);
+ extern json_spirit::Value submitblock(const json_spirit::Array& params, bool fHelp);
++extern json_spirit::Value checkblock(const json_spirit::Array& params, bool fHelp);
+ 
+ extern json_spirit::Value getnewaddress(const json_spirit::Array& params, bool fHelp); // in rpcwallet.cpp
+ extern json_spirit::Value getaccountaddress(const json_spirit::Array& params, bool fHelp);
+diff --git a/src/main.cpp b/src/main.cpp
+index 24fd1fa..187b253 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -2349,7 +2349,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
+ 
+     // Check timestamp
+     if (block.GetBlockTime() > GetAdjustedTime() + 2 * 60 * 60)
+-        return state.Invalid(error("CheckBlock() : block timestamp too far in the future"));
++      return state.Invalid(error("CheckBlock() : block timestamp %lld too far in the future",block.GetBlockTime()));
+ 
+     // First transaction must be coinbase, the rest must not be
+     if (block.vtx.empty() || !block.vtx[0].IsCoinBase())
+diff --git a/src/rpcmining.cpp b/src/rpcmining.cpp
+index c7f516c..0c2bf70 100644
+--- a/src/rpcmining.cpp
++++ b/src/rpcmining.cpp
+@@ -386,3 +386,32 @@ Value submitblock(const Array& params, bool fHelp)
+ 
+     return Value::null;
+ }
++
++
++Value checkblock(const Array& params, bool fHelp)
++{
++    if (fHelp || params.size() < 1 || params.size() > 2)
++        throw runtime_error(
++            "checkblock <hex data> [optional-params-obj]\n"
++            "[optional-params-obj] parameter is currently ignored.\n"
++            "Check Raw Block\n");
++
++
++    vector<unsigned char> blockData(ParseHex(params[0].get_str()));
++    CDataStream ssBlock(blockData, SER_NETWORK, PROTOCOL_VERSION);
++    CBlock pblock;
++    try {
++        ssBlock >> pblock;
++    }
++    catch (std::exception &e) {
++        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Block decode failed");
++    }
++
++    CValidationState state;
++    return CheckBlock(pblock,state);
++    // bool fAccepted = ProcessBlock(state, NULL, &pblock);
++    // if (!fAccepted)
++    //     return "rejected"; // TODO: report validation state
++
++    // return Value::null;
++}
+-- 
+1.8.4.rc4
+
