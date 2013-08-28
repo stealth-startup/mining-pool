@@ -14,6 +14,7 @@ var bitcoind = require('./kapitalize')({
 				       });
 
 
+
 var pubkey = util.getScriptPubKey(config.solo_addr);
 var msg = config.coinbase_msg;
 
