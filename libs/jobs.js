@@ -108,12 +108,15 @@ Jobs.prototype = {
   
   update_block : function() {
     var self = this;
-    var old = self.height;
     bitcoind.getblocktemplate(
       function(err,res) {
 	if(!err) {
 	  async.waterfall(
 	    [
+	      function(callback) {
+		self.merkle_to_coinbase = {};
+		callback(null);
+	      },
 	      function(callback) {
 		self.extranonce = 0;
 		self.height = res.height;
@@ -125,14 +128,6 @@ Jobs.prototype = {
 		self.update_merkle_branch(self.txs);
 		callback(null);
 	      } ,
-
-	      function(callback) {
-		if(self.height>old) {
-		  console.log("[%s]Empty merkle_to_coinbase",new Date());
-		  self.merkle_to_coinbase = {};
-		}
-		callback(null);
-	      },
 	      
 	      function(callback) {
 		var buf = new Buffer(self.prevhash,'hex');
@@ -233,11 +228,6 @@ Jobs.prototype = {
 
     var merkle = data.slice(72,136);
     var coinbase = this.merkle_to_coinbase[merkle];
-
-    if(!coinbase) {
-//      console.log("[%s]Staled:%d",new Date(),self.height);
-      return;
-    };
 
     if(pow) {
       // LMFAO!!!! We found a block!!!!
