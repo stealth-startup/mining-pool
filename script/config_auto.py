@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import requests
 import sys
 import argparse
@@ -29,7 +30,7 @@ boards=range(int(board_begin),int(board_end)+1)
 count = 1 
 
 for board in boards:
-    print "Config Board " + str(count)		
+    print "Config Tank %d Board %d" % (int(rack),int(board))
     data = {
         'JMIP' : '192.168.' + str(rack) + '.' + str(board),
         'JMSK' : '255.255.0.0',
