@@ -43,6 +43,8 @@ var bitcoind = require('./libs/kapitalize')({
 
 var job = new (require('./libs/jobs'))(bitcoind);
 
+job.update_block();
+
 var server = new rpc.Server();
 
 var shares = 0;
@@ -50,9 +52,6 @@ var jobs = 0;
 var blocks = [];
 var start = +new Date();
 var workers = {};
-
-job.update_block();
-
 
 function getwork(args, opt, callback) {
   var ip = opt.req.connection.remoteAddress;

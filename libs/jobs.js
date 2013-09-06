@@ -6,15 +6,6 @@ var util = require('./util');
 
 var buffertools = require('buffertools');
 
-var bitcoind = require('./kapitalize')({
-					 'user': config.bitcoind_user,
-					 'pass': config.bitcoind_pwd,
-					 'host': config.bitcoind_ip,
-					 'port': config.bitcoind_port
-				       });
-
-
-
 var pubkey = util.getScriptPubKey(config.solo_addr);
 var msg = config.coinbase_msg;
 
@@ -36,7 +27,7 @@ var toggle = require('endian-toggle');
 
 var coinbaser=require('./coinbase');
 
-function Jobs () {
+function Jobs (bitcoind) {
   this.b_version = new Buffer("00000002",'hex');
   this.b_padding = "00000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   this.addr = config.solo_addr;
@@ -55,7 +46,7 @@ function Jobs () {
   this.merkle_root = "";
   this.target = '00000000000000ffffffffffffffffffffffffffffffffffffffffffffffffff';
   this.hash1 = "00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000";
-
+  this.bitcoind = bitcoind;
 };
 
 Jobs.prototype = {
@@ -109,7 +100,7 @@ Jobs.prototype = {
   
   update_block : function() {
     var self = this;
-    bitcoind.getblocktemplate(
+    self.bitcoind.getblocktemplate(
       function(err,res) {
 	if(!err) {
 	  async.waterfall(
@@ -259,7 +250,7 @@ Jobs.prototype = {
 	    var raw_block = block_header + count_hex + tx_hex;
 	    console.log("[%s]BitCoin submitblock:%s",new Date(),raw_block);
 	    console.log("[%s]BitCoin submitblock:%s",new Date(),'https://blockchain.info/block-index/'+res);
-	    bitcoind.submitblock(raw_block,
+	    self.bitcoind.submitblock(raw_block,
 				 function(err,res){
 				   console.log("Error:%s",err);
 				   console.log("Result:%s",JSON.stringify(res));
