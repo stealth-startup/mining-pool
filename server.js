@@ -5,7 +5,43 @@ var argv = require('optimist')
 
 var rpc = require('./libs/jsonrpc');
 
-var job = new (require('./libs/jobs'))();
+var config = require('./config.json');
+
+if(config.bitcoind_ip=='127.0.0.1') {
+    // load bitcoin.conf if using local bitcoind
+    var confparser=require('./libs/confparser');
+    var conf={};
+    try{
+	conf=confparser.parseSync(config.bitcoind_path);
+    } catch(e) {
+	console.log("Can't find bitcoin.conf");
+	process.exit(1);
+    };
+    if(conf.testnet=='1') {
+	console.log("bitcoind is running on testnet!");
+	process.exit(1);
+    };
+    if(conf.server!='1') {
+	console.log("Set 'server=1' in bitcoin.conf");
+	process.exit(1);
+    };
+    if(!conf.rpcport || !conf.rpcuser || !conf.rpcpassword) {
+	console.log("Missing rpcport,rpcuser,rpcpassword in bitcoin.conf")
+	process.exit(1);
+    };
+    config.bitcoind_port = conf.rpcport;
+    config.bitcoind_user = conf.rpcuser;
+    config.bitcoind_pwd  = conf.rpcpassword;
+};
+
+var bitcoind = require('./libs/kapitalize')({
+					 'user': config.bitcoind_user,
+					 'pass': config.bitcoind_pwd,
+					 'host': config.bitcoind_ip,
+					 'port': config.bitcoind_port
+				       });
+
+var job = new (require('./libs/jobs'))(bitcoind);
 
 var server = new rpc.Server();
 

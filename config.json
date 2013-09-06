@@ -1,4 +1,5 @@
 {
+  "bitcoind_path"  : "~/.bitcoin/bitcoin.conf",
   "bitcoind_ip"   : "127.0.0.1" ,
   "bitcoind_port" : 8080 ,
   "bitcoind_user" : "naituida",
