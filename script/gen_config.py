@@ -18,7 +18,7 @@ args = parser.parse_args()
 tank = args.tank
 start = 100
 end = 191
-url = args.url
+url = "192.168.0."+args.url
 port = args.port
 
 fname= "tank-%s.py" % tank
