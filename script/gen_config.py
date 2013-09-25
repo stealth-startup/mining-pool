@@ -25,7 +25,7 @@ fname= "tank-%s.py" % tank
 print "Generating "+fname
 with open(fname,"w") as output:
     os.chmod(fname, 0744)
-    content="#!/bin/sh\n./config_auto.py -r %d -s %d -e %d -u %s -p %s -w tank%d\n" % (tank,start,end,url,port,tank)
+    content="#!/bin/sh\n./config_boards.py -r %d -s %d -e %d -u %s -p %s -w tank%d\n" % (tank,start,end,url,port,tank)
     print content
     output.write(content)
     output.close()
