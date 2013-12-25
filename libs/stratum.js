@@ -54,7 +54,7 @@ function info(msg){
 function diff2target(diff){
   var max = bignum.pow(2,16).sub(1).mul(bignum.pow(2,208));
   var cur = max.div(diff).toString(16);
-  return ("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64);
+  return toggle(new Buffer(("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64),'hex'),32).toString('hex');
 }
 
 function stratumSend(method,params,id) {
@@ -182,6 +182,7 @@ function getwork() {
   var data = job.version + job.prevhash + merkle_root + job.ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   var midstate = sha256.midstate(data.slice(0,128));
   var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":"00000000ffff0000000000000000000000000000000000000000000000000000"};
+  info("GetWork: "+JSON.stringify(work));
   return work;
 }
 
