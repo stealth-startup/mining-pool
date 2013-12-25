@@ -1,4 +1,7 @@
 var net = require('net');
+var toggle = require('endian-toggle');
+var bignum = require('bignum');
+var buffertools = require('buffertools');
 
 var methods = {
   subscribe : "mining.subscribe",
@@ -26,7 +29,9 @@ try {
 
 var job = {
   job_id:1,
+  worker_name:'naituida_1',
   diff:1,
+  target:'',
   prevhash:'',
   coinb1:'',
   coinb2:'',
@@ -37,12 +42,19 @@ var job = {
   extranonce1:0,
   extranonce2:0,
   extranonce2_size:0,
-  clean:true
+  clean:true,
+  merkle_to_extranonce2:{}
 };
 
 
 function info(msg){
   console.log("[%s]%s",new Date(),msg);
+}
+
+function diff2target(diff){
+  var max = bignum.pow(2,16).sub(1).mul(bignum.pow(2,208));
+  var cur = max.div(diff).toString(16);
+  return ("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64);
 }
 
 function stratumSend(method,params,id) {
@@ -131,16 +143,18 @@ client.on('subscribe', function () {
 });
 
 client.on('authorize', function () {
-  stratumAuthorize('naituida_1','123');
+  stratumAuthorize(job.worker_name,'123');
 });
 
 client.on('diff',function(diff) {
   info("Setting Difficulty " + diff);
   job.diff=diff;
+  job.target=diff2target(diff);
 });
 
 client.on('job',function(params) {
   info("Get New Job: " + JSON.stringify(params));
+  job.extranonce2=0;
   job.job_id=params[0];
   job.prevhash=params[1];
   job.coinb1=params[2];
@@ -152,16 +166,41 @@ client.on('job',function(params) {
   job.clean=params[8];
 });
 
-function formatExtranonce2(){
+function formatExtranonce2(extranonce2){
   var size=job.extranonce2_size;
-  return ('000000000000000000000000000000'+job.extranonce2.toString(16)).slice(-2*size);
+  return ('000000000000000000000000000000'+extranonce2.toString(16)).slice(-2*size);
 }
 
 function getwork() {
+  var extranonce2 = job.extranonce2;
+  job.extranonce2+=1;
+  var coinbase_tx = new Buffer(job.coinb1+job.extranonce1+formatExtranonce2(extranonce2)+job.coinb2,'hex');
+  var coinbase_hash = dhash(coinbase_tx);
+  var merkle_root_bin = toggle(job.merkle_branch.reduce(function(a,b){return dhash(a.concat(b));},coinbase_hash).reverse(),32);
+  var merkle_root = merkle_root_bin.toString('hex');
+  job.merkle_to_extranonce2[merkle_root]=extranonce2;
+  var data = job.version + job.prevhash + merkle_root + job.ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+  var midstate = sha256.midstate(data.slice(0,128));
+  var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":"00000000ffff0000000000000000000000000000000000000000000000000000"};
+  return work;
 }
 
 
 function submit(data) {
+  var buf = toggle(new Buffer(data,'hex'),32);
+  var hash = dhash(buf).reverse();
+  var res = ('0000000000000000000000000000000000000000000000000000000000000000'+hash.toString('hex')).slice(-64);
+  var target = job.target;
+  var pow = res<target;
+  if(pow) {
+    var nonce = data.slice(-8);
+    var merkle_root = data.slice(72,136);
+    var extranonce2 = job.merkle_to_extranonce2[merkle_root];
+    stratumSubmit(job.worker_name, job.job_id, extranonce2, job.ntime, nonce);
+  }
+  return {'found':pow,'hash':res};
 }
 
-// setInterval(function(){console.log(job);},5000);
+job.getwork = getwork;
+job.submit = submit;
+module.exports = job;

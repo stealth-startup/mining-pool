@@ -34,12 +34,9 @@ function getwork(args, opt, callback) {
       var block = {};
       block.hash = res.hash;
       block.timestamp = (new Date()).toLocaleString();
-      
-      if(!res.staled) {
-	blocks.push(block);
-      };
+      blocks.push(block);
     }
-    callback(null,"truetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetruetrue");
+    callback(null,"true");
   }
 };
 
