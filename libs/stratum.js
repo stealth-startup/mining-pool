@@ -32,6 +32,7 @@ var job = {
   worker_name:'naituida_1',
   diff:1,
   target:'',
+  target_orig:'',
   prevhash:'',
   coinb1:'',
   coinb2:'',
@@ -54,7 +55,7 @@ function info(msg){
 function diff2target(diff){
   var max = bignum.pow(2,16).sub(1).mul(bignum.pow(2,208));
   var cur = max.div(diff).toString(16);
-  return toggle(new Buffer(("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64),'hex'),32).toString('hex');
+  return (new Buffer(("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64),'hex')).reverse().toString('hex');
 }
 
 function stratumSend(method,params,id) {
@@ -93,10 +94,11 @@ function handleResponse(res){
     if(res.result==true) {
       info("Share Accepted");
     } else {
-      info("Share Rejected");
+      info("Share Rejected: "+JSON.stringify(res));
     }
   } else {
     if(Array.isArray(res.result)) {
+      info(JSON.stringify(res.result));
       job.extranonce1=res.result[1];
       job.extranonce2_size=res.result[2];
       client.emit('authorize');
@@ -135,6 +137,7 @@ client.on('data', function(data) {
 
 client.on('end', function() {
   info('client disconnected');
+  process.exit(1);
 });
 
 client.on('subscribe', function () {
@@ -150,6 +153,7 @@ client.on('diff',function(diff) {
   info("Setting Difficulty " + diff);
   job.diff=diff;
   job.target=diff2target(diff);
+  job.target_orig = (new Buffer(job.target,'hex')).reverse().toString('hex');
 });
 
 client.on('job',function(params) {
@@ -176,28 +180,47 @@ function getwork() {
   job.extranonce2+=1;
   var coinbase_tx = new Buffer(job.coinb1+job.extranonce1+formatExtranonce2(extranonce2)+job.coinb2,'hex');
   var coinbase_hash = dhash(coinbase_tx);
-  var merkle_root_bin = toggle(job.merkle_branch.reduce(function(a,b){return dhash(a.concat(b));},coinbase_hash).reverse(),32);
-  var merkle_root = merkle_root_bin.toString('hex');
-  job.merkle_to_extranonce2[merkle_root]=extranonce2;
+  var merkle_root_bin = job.merkle_branch.reduce(function(a,b){return dhash(a.concat(b));},coinbase_hash).reverse();
+  var merkle_root_flip = new Buffer(32);
+  merkle_root_flip.fill(0);
+  merkle_root_bin.copy(merkle_root_flip, 28,  0,  4);
+  merkle_root_bin.copy(merkle_root_flip, 24,  4,  8);
+  merkle_root_bin.copy(merkle_root_flip, 20,  8, 12);
+  merkle_root_bin.copy(merkle_root_flip, 16, 12, 16);
+  merkle_root_bin.copy(merkle_root_flip, 12, 16, 20);
+  merkle_root_bin.copy(merkle_root_flip,  8, 20, 24);
+  merkle_root_bin.copy(merkle_root_flip,  4, 24, 28);
+  merkle_root_bin.copy(merkle_root_flip,  0, 28, 32);
+  var merkle_root = merkle_root_flip.toString('hex');
+  job.merkle_to_extranonce2[merkle_root]=[job.job_id,extranonce2];
   var data = job.version + job.prevhash + merkle_root + job.ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   var midstate = sha256.midstate(data.slice(0,128));
-  var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":"00000000ffff0000000000000000000000000000000000000000000000000000"};
-  info("GetWork: "+JSON.stringify(work));
+  var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":job.target};
+  // info("GetWork: "+JSON.stringify(work));
   return work;
 }
 
 
 function submit(data) {
+  info("GetWork: "+data);
   var buf = toggle(new Buffer(data,'hex'),32);
   var hash = dhash(buf).reverse();
   var res = ('0000000000000000000000000000000000000000000000000000000000000000'+hash.toString('hex')).slice(-64);
-  var target = job.target;
+  var target = job.target_orig;
   var pow = res<target;
+  console.log(res);
+  console.log(target);
+  console.log(pow);
   if(pow) {
     var nonce = data.slice(-8);
     var merkle_root = data.slice(72,136);
-    var extranonce2 = job.merkle_to_extranonce2[merkle_root];
-    stratumSubmit(job.worker_name, job.job_id, extranonce2, job.ntime, nonce);
+    var val = job.merkle_to_extranonce2[merkle_root];
+    var job_id = val[0];
+    var extranonce2 = val[1];
+    var ntime = data.slice(136,144);
+    if(extranonce2) {
+      stratumSubmit(job.worker_name, job_id, formatExtranonce2(extranonce2), ntime, nonce);
+    }
   }
   return {'found':pow,'hash':res};
 }
