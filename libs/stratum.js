@@ -27,9 +27,12 @@ try {
   is_native = false;
 }
 
+var delta;
+
 var job = {
   job_id:1,
-  worker_name:'naituida_1',
+  worker_name:'naituida.worker1',
+  worker_pwd:'gqAPadP7',
   diff:1,
   target:'',
   target_orig:'',
@@ -77,7 +80,8 @@ function stratumSubmit(worker,job_id,extranonce2,ntime,nonce){
   stratumSend(methods.submit,[worker,job_id,extranonce2,ntime,nonce],999);
 }
 
-var host = "stratum.btcguild.com";
+// var host = "stratum.btcguild.com";
+var host = 'stratum.bitcoin.cz';
 var port = 3333;
 
 info("Connecting to "+host+":"+port);
@@ -146,7 +150,7 @@ client.on('subscribe', function () {
 });
 
 client.on('authorize', function () {
-  stratumAuthorize(job.worker_name,'123');
+  stratumAuthorize(job.worker_name,job.worker_pwd);
 });
 
 client.on('diff',function(diff) {
@@ -168,6 +172,10 @@ client.on('job',function(params) {
   job.bits=params[6];
   job.ntime=params[7];
   job.clean=params[8];
+  if(!delta) {
+    delta = parseInt(job.ntime,16)-(Math.floor(new Date()/1000));
+    info("Delta: "+delta);
+  };
 });
 
 function formatExtranonce2(extranonce2){
@@ -193,10 +201,11 @@ function getwork() {
   merkle_root_bin.copy(merkle_root_flip,  0, 28, 32);
   var merkle_root = merkle_root_flip.toString('hex');
   job.merkle_to_extranonce2[merkle_root]=[job.job_id,extranonce2];
-  var data = job.version + job.prevhash + merkle_root + job.ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
+  var ntime = Math.floor(new Date()/1000+delta).toString(16);
+  var data = job.version + job.prevhash + merkle_root + ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
   var midstate = sha256.midstate(data.slice(0,128));
   var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":job.target};
-  // info("GetWork: "+JSON.stringify(work));
+  info("GetWork: "+JSON.stringify(work));
   return work;
 }
 
