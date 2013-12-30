@@ -1,11 +1,18 @@
 var argv = require('optimist')
-  .usage('Usage: $0 -p [mining port]')
+  .usage('Usage: $0 -p [mining port] -f [pool.json]')
   .demand(['p'])
+  .demand(['f'])
   .argv;
 
 var rpc = require('./libs/jsonrpc');
 
-var job = require('./libs/stratum');
+var file = __dirname + '/'+ argv.f;
+ 
+var pool = require(file);
+
+console.log(pool);
+
+var job = require('./libs/stratum')(pool);
 
 var server = new rpc.Server();
 

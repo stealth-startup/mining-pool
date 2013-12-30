@@ -1,0 +1,6 @@
+{
+    "host":"stratum.bitcoin.cz",
+    "port":3333,
+    "worker":"naituida.worker1",
+    "pwd":"gqAPadP7"
+}

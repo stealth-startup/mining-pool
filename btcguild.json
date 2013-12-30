@@ -1,0 +1,6 @@
+{
+    "host":"stratum.btcguild.com",
+    "port":3333,
+    "worker":"naituida_1",
+    "pwd":"123"
+}
