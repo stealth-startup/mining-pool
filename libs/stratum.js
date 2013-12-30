@@ -31,8 +31,10 @@ var delta;
 
 var job = {
   job_id:1,
-  worker_name:'naituida.worker1',
-  worker_pwd:'gqAPadP7',
+  // worker_name:'naituida.worker1',
+  // worker_pwd:'gqAPadP7',
+  worker_name:'naituida_1',
+  worker_pwd:'123',
   diff:1,
   target:'',
   target_orig:'',
@@ -80,8 +82,8 @@ function stratumSubmit(worker,job_id,extranonce2,ntime,nonce){
   stratumSend(methods.submit,[worker,job_id,extranonce2,ntime,nonce],999);
 }
 
-// var host = "stratum.btcguild.com";
-var host = 'stratum.bitcoin.cz';
+var host = "stratum.btcguild.com";
+// var host = 'stratum.bitcoin.cz';
 var port = 3333;
 
 info("Connecting to "+host+":"+port);
@@ -172,10 +174,8 @@ client.on('job',function(params) {
   job.bits=params[6];
   job.ntime=params[7];
   job.clean=params[8];
-  if(!delta) {
-    delta = parseInt(job.ntime,16)-(Math.floor(new Date()/1000));
-    info("Delta: "+delta);
-  };
+  delta = parseInt(job.ntime,16)-(Math.floor(new Date()/1000));
+  info("Delta: "+delta);
 });
 
 function formatExtranonce2(extranonce2){
@@ -188,18 +188,8 @@ function getwork() {
   job.extranonce2+=1;
   var coinbase_tx = new Buffer(job.coinb1+job.extranonce1+formatExtranonce2(extranonce2)+job.coinb2,'hex');
   var coinbase_hash = dhash(coinbase_tx);
-  var merkle_root_bin = job.merkle_branch.reduce(function(a,b){return dhash(a.concat(b));},coinbase_hash).reverse();
-  var merkle_root_flip = new Buffer(32);
-  merkle_root_flip.fill(0);
-  merkle_root_bin.copy(merkle_root_flip, 28,  0,  4);
-  merkle_root_bin.copy(merkle_root_flip, 24,  4,  8);
-  merkle_root_bin.copy(merkle_root_flip, 20,  8, 12);
-  merkle_root_bin.copy(merkle_root_flip, 16, 12, 16);
-  merkle_root_bin.copy(merkle_root_flip, 12, 16, 20);
-  merkle_root_bin.copy(merkle_root_flip,  8, 20, 24);
-  merkle_root_bin.copy(merkle_root_flip,  4, 24, 28);
-  merkle_root_bin.copy(merkle_root_flip,  0, 28, 32);
-  var merkle_root = merkle_root_flip.toString('hex');
+  var merkle_root_bin = toggle(job.merkle_branch.reduce(function(a,b){return dhash(a.concat(new Buffer(b,'hex')));},coinbase_hash),32);
+  var merkle_root = merkle_root_bin.toString('hex');
   job.merkle_to_extranonce2[merkle_root]=[job.job_id,extranonce2];
   var ntime = Math.floor(new Date()/1000+delta).toString(16);
   var data = job.version + job.prevhash + merkle_root + ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
@@ -237,3 +227,5 @@ function submit(data) {
 job.getwork = getwork;
 job.submit = submit;
 module.exports = job;
+
+

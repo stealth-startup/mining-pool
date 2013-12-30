@@ -36,7 +36,7 @@ function getwork(args, opt, callback) {
       block.timestamp = (new Date()).toLocaleString();
       blocks.push(block);
     }
-    callback(null,"true");
+    callback(null,true);
   }
 };
 
