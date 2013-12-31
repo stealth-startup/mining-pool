@@ -3,6 +3,44 @@ var toggle = require('endian-toggle');
 var bignum = require('bignum');
 var buffertools = require('buffertools');
 
+var moment = require('moment');
+
+var winston = require('winston');
+
+var myCustomLevels = {
+  levels: {
+    debug: 0,
+    info: 1,
+    warn: 2,
+    error: 3
+  },
+  colors: {
+    debug: 'blue',
+    info: 'green',
+    warn: 'yellow',
+    error: 'red'
+  }
+};
+
+winston.addColors(myCustomLevels.colors);
+
+var logger = new (winston.Logger)({
+  levels: myCustomLevels.levels,
+  transports: [
+    new (winston.transports.Console)({timestamp:function(){return moment().format('YYYY-M-D HH:mm:ss Z');},
+				      level:'debug',
+				      colorize:true})
+  ]});11
+
+
+// function info(msg){
+//   console.log("[%s]%s",new Date(),msg);
+// }
+var debug = logger.debug;
+var info = logger.info;
+var warn = logger.warn;
+var error = logger.error;
+
 var methods = {
   subscribe : "mining.subscribe",
   authorize : "mining.authorize",
@@ -58,9 +96,6 @@ var job = {
 };
 
 
-function info(msg){
-  console.log("[%s]%s",new Date(),msg);
-}
 
 function diff2target(diff){
   var max = bignum.pow(2,16).sub(1).mul(bignum.pow(2,208));
@@ -70,7 +105,7 @@ function diff2target(diff){
 
 function stratumSend(method,params,id) {
   var data =  {id:id,method:method,params:params};
-  info("Sending: "+JSON.stringify(data));
+  debug("Sending: "+JSON.stringify(data));
   client.write(JSON.stringify(data)+'\n');
 }
 
@@ -82,9 +117,12 @@ function stratumAuthorize(user,pass) {
   stratumSend(methods.authorize,[user,pass]);
 }
 
+var share_id=999;
+
 // {"params": ["slush.miner1", "bf", "00000001", "504e86ed", "b2957c02"], "id": 4, "method": "mining.submit"}
 function stratumSubmit(worker,job_id,extranonce2,ntime,nonce){
-  stratumSend(methods.submit,[worker,job_id,extranonce2,ntime,nonce],999);
+  stratumSend(methods.submit,[worker,job_id,extranonce2,ntime,nonce],share_id);
+  // share_id+=1;
 }
 
 // var host = 'stratum.bitcoin.cz';
@@ -107,12 +145,15 @@ function connect() {
     });
 }
 
+var authorized=false;
+
 function handleResponse(res){
-  if(res.id==999) {
-    if(res.result==true) {
+  if(authorized && res.id) {
+    debug(JSON.stringify(res));
+    if(res.result) {
       info("Share Accepted");
     } else {
-      info("Share Rejected: "+JSON.stringify(res));
+      info("Share Rejected");
     }
   } else {
     if(Array.isArray(res.result)) {
@@ -126,6 +167,7 @@ function handleResponse(res){
       client.emit('diff',res.params[0]);
     } else if(res.result==true) {
       info("Authorized");
+      authorized=true;
     }
   }
 };
@@ -183,6 +225,16 @@ module.exports = function(pool){
   client.on('job',function(params) {
     // info("Get New Job: " + JSON.stringify(params));
     info("Get New Job");
+    debug("Job ID: x%s",params[0]);
+    debug("Prevhash: %s",params[1]);
+    debug("Coinb1: %s",params[2]);
+    debug("Coinb2: %s",params[3]);
+    debug("Merkle Branch: %s",JSON.stringify(params[4]));
+    debug("Version: %s",params[5]);
+    debug("Bits: %s",params[6]);
+    debug("Ntime: %s",params[7]);
+    debug("Clean: %s",params[8]);
+    
     job.extranonce2=0;
     job.job_id=params[0];
     job.prevhash=params[1];
@@ -214,7 +266,8 @@ module.exports = function(pool){
     var data = job.version + job.prevhash + merkle_root + ntime + job.bits + "00000000" + "000000800000000000000000000000000000000000000000000000000000000000000000000000000000000080020000";
     var midstate = sha256.midstate(data.slice(0,128));
     var work= {"midstate":midstate,"data":data,"hash1":"00000000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000010000","target":job.target};
-    // info("GetWork: "+JSON.stringify(work));
+    info("GetWork");
+    debug(JSON.stringify(work));
     return work;
   }
 
@@ -226,9 +279,9 @@ module.exports = function(pool){
     var res = ('0000000000000000000000000000000000000000000000000000000000000000'+hash.toString('hex')).slice(-64);
     var target = job.target_orig;
     var pow = res<target;
-    console.log(res);
-    console.log(target);
-    console.log(pow);
+    debug("  Hash: %s",res);
+    debug("Target: %s",target);
+    debug("   Pow: %s",pow);
     if(pow) {
       var nonce = data.slice(-8);
       var merkle_root = data.slice(72,136);
