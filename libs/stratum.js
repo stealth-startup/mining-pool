@@ -30,12 +30,8 @@ var logger = new (winston.Logger)({
     new (winston.transports.Console)({timestamp:function(){return moment().format('YYYY-M-D HH:mm:ss Z');},
 				      level:'debug',
 				      colorize:true})
-  ]});11
+  ]});
 
-
-// function info(msg){
-//   console.log("[%s]%s",new Date(),msg);
-// }
 var debug = logger.debug;
 var info = logger.info;
 var warn = logger.warn;
@@ -49,7 +45,8 @@ var methods = {
 
 var notifys = {
   job : "mining.notify",
-  diff : "mining.set_difficulty"
+  diff : "mining.set_difficulty",
+  reconnect : "client.reconnect"
 };
 
 var crypto = require('crypto');
@@ -76,8 +73,8 @@ var job = {
   // worker_name:'naituida_1',
   // worker_pwd:'123',
   // ghash.io
-  worker_name:'naituida.1',
-  worker_pwd:'123',
+  worker_name:'',
+  worker_pwd:'',
   diff:1,
   target:'',
   target_orig:'',
@@ -103,25 +100,25 @@ function diff2target(diff){
   return (new Buffer(("0000000000000000000000000000000000000000000000000000000000000000"+cur).slice(-64),'hex')).reverse().toString('hex');
 }
 
-function stratumSend(method,params,id) {
+function stratumSend(client,method,params,id) {
   var data =  {id:id,method:method,params:params};
   debug("Sending: "+JSON.stringify(data));
   client.write(JSON.stringify(data)+'\n');
 }
 
-function stratumSubscribe(callback) {
-  stratumSend(methods.subscribe,[]);
+function stratumSubscribe(client,callback) {
+  stratumSend(client,methods.subscribe,[]);
 }
 
-function stratumAuthorize(user,pass) {
-  stratumSend(methods.authorize,[user,pass]);
+function stratumAuthorize(client,user,pass) {
+  stratumSend(client,methods.authorize,[user,pass]);
 }
 
 var share_id=999;
 
 // {"params": ["slush.miner1", "bf", "00000001", "504e86ed", "b2957c02"], "id": 4, "method": "mining.submit"}
-function stratumSubmit(worker,job_id,extranonce2,ntime,nonce){
-  stratumSend(methods.submit,[worker,job_id,extranonce2,ntime,nonce],share_id);
+function stratumSubmit(client,worker,job_id,extranonce2,ntime,nonce){
+  stratumSend(client,methods.submit,[worker,job_id,extranonce2,ntime,nonce],share_id);
   // share_id+=1;
 }
 
@@ -143,47 +140,9 @@ function connect() {
       info('Client Connected');
       client.emit('subscribe');
     });
-}
-
-var authorized=false;
-
-function handleResponse(res){
-  if(authorized && res.id) {
-    debug(JSON.stringify(res));
-    if(res.result) {
-      info("Share Accepted");
-    } else {
-      info("Share Rejected");
-    }
-  } else {
-    if(Array.isArray(res.result)) {
-      info(JSON.stringify(res.result));
-      job.extranonce1=res.result[1];
-      job.extranonce2_size=res.result[2];
-      client.emit('authorize');
-    } else if(res.method==notifys.job) {
-      client.emit('job',res.params);
-    } else if(res.method==notifys.diff) {
-      client.emit('diff',res.params[0]);
-    } else if(res.result==true) {
-      info("Authorized");
-      authorized=true;
-    }
-  }
-};
-
-
-var chunk='';
-
-module.exports = function(pool){
-  host = pool.host;
-  port = pool.port;
-  job.worker_name = pool.worker;
-  job.worker_pwd  = pool.pwd;
-  connect();
   client.on('data', function(data) {
     var recv = data.toString();
-    // info("Received: "+ recv);
+    debug("Received: "+ recv);
     chunk+=recv;
     if(recv.slice(-1)=='\n') {
       var jsons = chunk.trim().split('\n');
@@ -203,16 +162,16 @@ module.exports = function(pool){
 
   client.on('end', function() {
     info('client disconnected');
-    process.exit(1);
+    // process.exit(1);
   });
 
   client.on('subscribe', function () {
     info("Subscribing");
-    stratumSubscribe();
+    stratumSubscribe(client);
   });
 
   client.on('authorize', function () {
-    stratumAuthorize(job.worker_name,job.worker_pwd);
+    stratumAuthorize(client,job.worker_name,job.worker_pwd);
   });
 
   client.on('diff',function(diff) {
@@ -248,11 +207,57 @@ module.exports = function(pool){
     delta = parseInt(job.ntime,16)-(Math.floor(new Date()/1000));
     info("Delta: "+delta);
   });
+}
 
-  function formatExtranonce2(extranonce2){
-    var size=job.extranonce2_size;
-    return ('000000000000000000000000000000'+extranonce2.toString(16)).slice(-2*size);
+var authorized=false;
+
+function handleResponse(res){
+  if(authorized && res.id) {
+    debug(JSON.stringify(res));
+    if(res.result) {
+      info("Share Accepted");
+    } else if(res.method==notifys.reconnect) {
+      host = res.params[0];
+      port = res.params[1];
+      warn("Reconnecting to new server %s:%s",host,port);
+      authorized=false;
+      client.destroy();
+      connect();
+    } else {
+      info("Share Rejected");
+    }
+  } else {
+    if(Array.isArray(res.result)) {
+      info(JSON.stringify(res.result));
+      job.extranonce1=res.result[1];
+      job.extranonce2_size=res.result[2];
+      client.emit('authorize');
+    } else if(res.method==notifys.job) {
+      client.emit('job',res.params);
+    } else if(res.method==notifys.diff) {
+      client.emit('diff',res.params[0]);
+    } else if(res.result==true) {
+      info("Authorized");
+      authorized=true;
+    }
   }
+};
+
+function formatExtranonce2(extranonce2){
+  var size=job.extranonce2_size;
+  return ('000000000000000000000000000000'+extranonce2.toString(16)).slice(-2*size);
+}
+
+
+
+var chunk='';
+
+module.exports = function(pool){
+  host = pool.host;
+  port = pool.port;
+  job.worker_name = pool.worker;
+  job.worker_pwd  = pool.pwd;
+  connect();
 
   function getwork() {
     var extranonce2 = job.extranonce2;
@@ -290,7 +295,7 @@ module.exports = function(pool){
       var extranonce2 = val[1];
       var ntime = data.slice(136,144);
       if(extranonce2) {
-	stratumSubmit(job.worker_name, job_id, formatExtranonce2(extranonce2), ntime, nonce);
+	stratumSubmit(client,job.worker_name, job_id, formatExtranonce2(extranonce2), ntime, nonce);
       }
     }
     return {'found':pow,'hash':res};
